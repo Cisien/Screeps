@@ -5,12 +5,13 @@ var roleHarvester = {
             var result = creep.harvest(sources[0]); 
             console.log("harvester: " + result)
             if (result == ERR_NOT_IN_RANGE) {
-                for(var source in sources)
+                for(var source in sources){
                 var moved = creep.moveTo(sources[0]) == OK;
                 if(moved)
                 {
                     break; 
                 }
+            }
             }
         }
         else {
