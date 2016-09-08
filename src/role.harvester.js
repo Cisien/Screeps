@@ -1,7 +1,6 @@
 var roleHarvester = {
     run: function (creep) {
         if (creep.carry.energy < creep.carryCapacity) {
-            console.log('harvester looking ' + creep.name + 'for sources')
             var sources = creep.room.find(FIND_SOURCES);
 
             var harvestResult = creep.harvest(sources[0]);
