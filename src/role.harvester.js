@@ -1,16 +1,14 @@
 var roleHarvester = {
     run: function (creep) {
         if (creep.carry.energy < creep.carryCapacity) {
+            console.log('harvester looking ' + creep.name + 'for sources')
             var sources = creep.room.find(FIND_SOURCES);
-            for (var source in sources) {
-                if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                    var moved = creep.moveTo(source);
-                    console.log("harvester able to move: " + moved == OK);
-                    if (moved == OK) {
-                        break;
-                    }
-                }
+
+            var harvestResult = creep.harvest(sources[0]);
+            if (harvestResult == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sources[0]);
             }
+
         }
         else {
             var targets = creep.room.find(FIND_STRUCTURES, {
