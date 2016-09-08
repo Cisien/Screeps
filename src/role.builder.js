@@ -1,6 +1,8 @@
 var roleBuilder = {
     run: function (creep) {
-
+        if (!creep.memory.assignedNode) {
+            creep.memory.assignedNode = 0;
+        }
         if (creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
             creep.say('harvesting');
@@ -22,14 +24,8 @@ var roleBuilder = {
             }
             else {
                 var sources = creep.room.find(FIND_SOURCES);
-                for (var source in sources) {
-                    if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                        var moved = creep.moveTo(source);
-                        console.log("harvester able to move: " + moved == OK);
-                        if (moved == OK) {
-                            break;
-                        }
-                    }
+                if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(sources[creep.memory.assignedNode]);
 
                 }
             }
