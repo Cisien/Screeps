@@ -11,25 +11,30 @@ var roleBuilder = {
         }
 
         if (creep.memory.building) {
-            var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if (targets.length) {
-                if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0]);
+
+            if (creep.carry.energy < creep.carryCapacity) {
+                var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+                if (targets.length) {
+                    if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(targets[0]);
+                    }
+                }
+            }
+            else {
+                var sources = creep.room.find(FIND_SOURCES);
+                for (var source in sources) {
+                    if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                        var moved = creep.moveTo(source);
+                        console.log("harvester able to move: " + moved == OK);
+                        if (moved == OK) {
+                            break;
+                        }
+                    }
+
                 }
             }
         }
-        else {
-            var sources = creep.room.find(FIND_SOURCES);
-            //for (source in sources) {
-                var result = creep.harvest(sources[0]);
-                console.log(result);
-                if (result == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(sources[0]);
-                }
-            //}
-        }
     }
-
 };
 
 module.exports = roleBuilder;
