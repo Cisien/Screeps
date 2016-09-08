@@ -20,8 +20,8 @@ var roleBuilder = {
         }
         else {
             var sources = creep.room.find(FIND_SOURCES);
-            if (creep.harvest(sources[creep.memory.assignedNode]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[creep.memory.assignedNode]);
+            if (creep.harvest(sources[1]) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sources[1]);
 
             }
         }
