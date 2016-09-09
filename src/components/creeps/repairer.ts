@@ -1,36 +1,31 @@
 import CreepAction, { ICreepAction } from "./creepAction";
 
-export interface IHarvester {
+export interface IRepairer {
 
   targetSource: Source;
-  targetEnergyDropOff: Structure
+  repairTarget: Structure;
 
   isBagFull(): boolean;
   tryHarvest(): number;
   moveToHarvest(): void;
-  tryEnergyDropOff(): number;
-  moveToDropEnergy(): void;
+  tryRepair(): number;
+  moveToRepair(): void;
 
   action(): boolean;
 }
 
-export default class Harvester extends CreepAction implements IHarvester, ICreepAction {
+export default class Repairer extends CreepAction implements IRepairer, ICreepAction {
 
   public targetSource: Source;
-  public targetEnergyDropOff: Structure;
+  public repairTarget: Structure
 
   public setCreep(creep: Creep) {
     super.setCreep(creep);
 
     this.targetSource = <Source>Game.getObjectById<Source>(this.creep.memory.target_source_id);
-
-    this.targetEnergyDropOff = <Structure>creep.pos
-      .findClosestByPath<Structure>(FIND_STRUCTURES, {
-        filter: (s: Structure) => (s.structureType === STRUCTURE_EXTENSION
-          || s.structureType === STRUCTURE_SPAWN
-          || s.structureType === STRUCTURE_TOWER)
-      });
-
+    this.repairTarget = creep.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
+      filter: (s: Structure) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL || s.structureType != STRUCTURE_RAMPART)
+    });
   }
 
   public isBagFull(): boolean {
@@ -47,13 +42,13 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
     }
   }
 
-  public tryEnergyDropOff(): number {
-    return this.creep.transfer(this.targetEnergyDropOff, RESOURCE_ENERGY);
+  public tryRepair(): number {
+    return this.creep.repair(this.repairTarget);
   }
 
-  public moveToDropEnergy(): void {
-    if (this.tryEnergyDropOff() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.targetEnergyDropOff);
+  public moveToRepair(): void {
+    if (this.tryRepair() === ERR_NOT_IN_RANGE) {
+      this.moveTo(this.repairTarget);
     }
   }
 
@@ -64,13 +59,11 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
     if (!this.creep.memory.working && this.creep.carry.energy == this.creep.carryCapacity) {
       this.creep.memory.working = true;
     }
-
     if (this.creep.memory.working) {
-      this.moveToDropEnergy();
+      this.moveToRepair();
     } else {
       this.moveToHarvest();
     }
-
     return true;
   }
 }

@@ -7,18 +7,67 @@ import * as RoomManager from "./../rooms/roomManager";
 import Harvester from "./harvester";
 import Upgrader from "./upgrader";
 import Builder from "./builder";
+import Repairer from "./repairer";
 
 export let creeps: { [creepName: string]: Creep };
 export let creepNames: string[] = [];
-export let harvesterCount: number;
-export let upgraderCount: number;
-export let builderCount: number;
-export let creepCount: number;
+export let harvesterCount: number = 0;
+export let upgraderCount: number = 0;
+export let builderCount: number = 0;
+export let repairerCount: number = 0;
+export let creepCount: number = 0;
+
+export let harvesters: Harvester[] = [];
+export let upgraders: Upgrader[] = [];
+export let builders: Builder[] = [];
+export let repairers: Repairer[] = []
 
 export function loadCreeps(): void {
   creeps = Game.creeps;
   creepCount = _.size(creeps);
 
+  this.harvesterCount = 0;
+  this.upgraderCount = 0;
+  this.builderCount = 0;
+  this.repairerCount = 0;
+
+  this.harvesters = [];
+  this.upgraders = [];
+  this.builders = [];
+  this.repairers = [];
+
+  _.forEach(creeps, (c: Creep) => {
+    switch (c.memory.role) {
+      case 'harvester': {
+        this.harvesterCount++;
+        let creep = new Harvester();
+        creep.setCreep(c);
+        this.harvesters.push(creep);
+        break;
+      }
+      case 'upgrader': {
+        this.upgraderCount++;
+        let creep = new Upgrader();
+        creep.setCreep(c);
+        this.upgraders.push(creep);
+      }
+        break;
+      case 'builder': {
+        this.builderCount++;
+        let creep = new Builder();
+        creep.setCreep(c);
+        this.repairers.push(creep);
+      }
+        break;
+      case 'repairer': {
+        this.repairerCount++;
+        let creep = new Repairer();
+        creep.setCreep(c);
+        this.repairers.push(creep);
+      }
+        break;
+    }
+  });
   _loadCreepNames();
 
   if (Config.VERBOSE) {
@@ -40,7 +89,7 @@ export function createHarvester(): number | string {
   if (status === OK) {
     status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
 
-    if (Config.VERBOSE && !(status < 0) ) {
+    if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new Harvester");
     }
   }
@@ -75,7 +124,7 @@ export function createUpgrader(): number | string {
     status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
   }
 
-  if (Config.VERBOSE && !(status < 0) ) {
+  if (Config.VERBOSE && !(status < 0)) {
     console.log("Started creating new Harvester");
   }
 
@@ -87,7 +136,7 @@ export function createBuilder(): number | string {
   let properties: { [key: string]: any } = {
     renew_station_id: SpawnManager.getFirstSpawn().id,
     role: "builder",
-    target_source_id: SourceManager.sources[SourceManager.sourceCount -1].id,
+    target_source_id: SourceManager.sources[SourceManager.sourceCount - 1].id,
     working: false
   }
 
@@ -97,29 +146,39 @@ export function createBuilder(): number | string {
     status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
   }
 
-  if(Config.VERBOSE && !(status < 0) ) {
+  if (Config.VERBOSE && !(status < 0)) {
     console.log("Started creating new Builder");
   }
 
   return status;
 }
 
+export function createRepairer(): number | string {
+  let bodyParts: string[] = [MOVE, MOVE, CARRY, WORK];
+  let properties: { [key: string]: any } = {
+    renew_station_id: SpawnManager.getFirstSpawn().id,
+    role: "repairer",
+    target_source_id: SourceManager.sources[SourceManager.sourceCount - 1].id,
+    working: false
+  }
+
+  let status: number | string = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
+
+  if (status == OK) {
+    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+  }
+
+  if (Config.VERBOSE && !(status < 0)) {
+    console.log("Started creating new Repairer");
+  }
+
+  return status;
+}
 
 export function harvestersGoToWork(): void {
-
-  let harvesters: Harvester[] = [];
-  _.forEach(this.creeps, function (creep: Creep) {
-    if (creep.memory.role === "harvester") {
-      let harvester = new Harvester();
-      harvester.setCreep(creep);
-      // Next move for harvester
-      harvester.action();
-
-      // Save harvester to collection
-      harvesters.push(harvester);
-    }
+  _.forEach(this.harvesters, function (creep: Harvester) {
+    creep.action();
   });
-  this.harvesterCount = harvesters.length;
 
   if (Config.VERBOSE) {
     console.log(harvesters.length + " harvesters reported on duty today!");
@@ -128,17 +187,9 @@ export function harvestersGoToWork(): void {
 }
 
 export function upgradersGoToWork(): void {
-  let upgraders: Upgrader[] = [];
-  _.forEach(this.creeps, function (creep: Creep) {
-    if (creep.memory.role === 'upgrader') {
-      let upgrader = new Upgrader();
-      upgrader.setCreep(creep);
-      upgrader.action();
-
-      upgraders.push(upgrader);
-    }
+  _.forEach(this.upgraders, function (creep: Upgrader) {
+    creep.action();
   });
-  this.upgraderCount = upgraders.length;
 
   if (Config.VERBOSE) {
     console.log(upgraders.length + " upgraders reported on duty today!");
@@ -146,19 +197,22 @@ export function upgradersGoToWork(): void {
 }
 
 export function buildersGoToWork(): void {
-  let builders: Builder[] = [];
-  _.forEach(this.creeps, function(creep: Creep) {
-    if(creep.memory.role === 'builder') {
-      let builder = new Builder();
-      builder.setCreep(creep);
-      builder.action();
-      builders.push(builder);
-    }
+  _.forEach(this.builders, function (creep: Builder) {
+    creep.action();
   });
-  this.builderCount = builders.length;
 
-  if(Config.VERBOSE) {
+  if (Config.VERBOSE) {
     console.log(builders.length + " builders reported on duty today!");
+  }
+}
+
+export function repairerGoToWork(): void {
+  _.forEach(this.repairers, function (creep: Repairer) {
+    creep.action();
+  });
+
+  if (Config.VERBOSE) {
+    console.log(repairers.length + " repairers reported on duty today!");
   }
 }
 
@@ -167,15 +221,28 @@ export function buildersGoToWork(): void {
  * all the harvesters for all source points at the start.
  */
 export function isHarvesterLimitFull(): boolean {
+  console.log(this.harvesterCount + ' harvesters');
+
   return Config.MAX_HARVESTERS_PER_SOURCE <= this.harvesterCount;
 }
 
 export function isUpgraderLimitFull(): boolean {
+
+  console.log(this.upgraderCount + ' upgraders');
+
   return Config.MAX_UPGRADERS_PER_SOURCE <= this.upgraderCount;
 }
 
 export function isBuilderLimitFull(): boolean {
+  console.log(this.builderCount + ' builders');
+
   return Config.MAX_BUILDERS_PER_SOURCE <= this.builderCount;
+}
+
+export function isRepairerLimitFull(): boolean {
+  console.log(this.repairerCount + ' repairers');
+
+  return Config.MAX_REPAIRERS_PER_SOURCE <= this.repairerCount;
 }
 
 function _loadCreepNames(): void {

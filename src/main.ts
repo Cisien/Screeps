@@ -17,7 +17,6 @@ import * as CreepManager from "./components/creeps/creepManager";
 // Use this bootstrap wisely. You can cache some of your stuff to save CPU
 // You should extend prototypes before game loop in here.
 
-console.log("things")
 RoomManager.loadRooms();
 SpawnManager.loadSpawns();
 SourceManager.loadSources();
@@ -56,10 +55,16 @@ export function loop() {
     if (Config.VERBOSE) {
       console.log("Need more builders!")
     }
-  }
+  } else if (!CreepManager.isRepairerLimitFull()) {
+    CreepManager.createRepairer();
 
+    if (Config.VERBOSE) {
+      console.log("Need more repairers!")
+    }
+  }
 
   CreepManager.harvestersGoToWork();
   CreepManager.upgradersGoToWork();
   CreepManager.buildersGoToWork();
+  CreepManager.repairerGoToWork();
 }
