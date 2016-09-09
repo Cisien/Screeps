@@ -21,8 +21,8 @@ export const USE_PATHFINDER: boolean = true;
 export const DEFAULT_MIN_LIFE_BEFORE_NEEDS_REFILL: number = 700;
 
 
-export const MAX_UPGRADERS_PER_SOURCE: number = 4;
+export const MAX_UPGRADERS_PER_SOURCE: number = 2;
 
-export const MAX_BUILDERS_PER_SOURCE: number = 3;
+export const MAX_BUILDERS_PER_SOURCE: number = 1;
 
-export const MAX_REPAIRERS_PER_SOURCE: number = 3;
+export const MAX_REPAIRERS_PER_SOURCE: number = 1;

@@ -24,7 +24,7 @@ export default class Repairer extends CreepAction implements IRepairer, ICreepAc
 
     this.targetSource = <Source>Game.getObjectById<Source>(this.creep.memory.target_source_id);
     this.repairTarget = creep.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-      filter: (s: Structure) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL || s.structureType != STRUCTURE_RAMPART)
+      filter: (s: Structure) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART)
     });
   }
 
