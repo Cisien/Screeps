@@ -19,6 +19,7 @@
 *.zip
 *.vi
 *~
+/src/**/*.json
 
 # Editor folders
 .cache
