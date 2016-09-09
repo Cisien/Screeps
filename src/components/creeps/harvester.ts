@@ -70,5 +70,4 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
     //}
     return true;
   }
-
 }

@@ -66,5 +66,4 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
     }
     return true;
   }
-
 }

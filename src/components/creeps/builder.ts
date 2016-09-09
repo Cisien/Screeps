@@ -64,5 +64,4 @@ export default class Builder extends CreepAction implements IBuilder, ICreepActi
     }
     return true;
   }
-
 }

@@ -55,8 +55,8 @@ export function loop() {
     if (Config.VERBOSE) {
       console.log("Need more builders!")
     }
-
   }
+
 
   CreepManager.harvestersGoToWork();
   CreepManager.upgradersGoToWork();
