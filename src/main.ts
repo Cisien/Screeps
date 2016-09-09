@@ -17,6 +17,7 @@ import * as CreepManager from "./components/creeps/creepManager";
 // Use this bootstrap wisely. You can cache some of your stuff to save CPU
 // You should extend prototypes before game loop in here.
 
+console.log("things")
 RoomManager.loadRooms();
 SpawnManager.loadSpawns();
 SourceManager.loadSources();
