@@ -19,7 +19,6 @@
 *.zip
 *.vi
 *~
-*js
 
 # Editor folders
 .cache
