@@ -42,6 +42,12 @@ export function loop() {
     if (Config.VERBOSE) {
       console.log("Need more harvesters!");
     }
+  } else if (!CreepManager.isEnergyMoverLimitFull()) {
+    CreepManager.createEnergyMover();
+
+    if (Config.VERBOSE) {
+      console.log("Need more energyMovers!");
+    }
   } else if (!CreepManager.isUpgraderLimitFull()) {
     CreepManager.createUpgrader();
 
@@ -63,8 +69,5 @@ export function loop() {
     }
   }
 
-  CreepManager.harvestersGoToWork();
-  CreepManager.upgradersGoToWork();
-  CreepManager.buildersGoToWork();
-  CreepManager.repairerGoToWork();
+  CreepManager.doTickWork();
 }

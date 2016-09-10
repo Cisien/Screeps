@@ -2,8 +2,8 @@ import CreepAction, { ICreepAction } from "./creepAction";
 
 export interface IUpgrader {
 
-  targetSource: Source;
-  targetEnergyDropOff: Spawn | Structure | Controller;
+  targetSource: Structure;
+  targetEnergyDropOff: Controller;
 
   isBagFull(): boolean;
   tryHarvest(): number;
@@ -16,15 +16,19 @@ export interface IUpgrader {
 
 export default class Upgrader extends CreepAction implements IUpgrader, ICreepAction {
 
-  public targetSource: Source;
-  public targetEnergyDropOff: Spawn | Structure | Controller
+  public targetSource: Structure;
+  public targetEnergyDropOff: Controller
 
   public setCreep(creep: Creep) {
     super.setCreep(creep);
 
-    this.targetSource = <Source>Game.getObjectById<Source>(this.creep.memory.target_source_id);
-    this.targetEnergyDropOff = <Spawn | Structure | Controller>Game.getObjectById<Spawn | Structure | Controller>(this.creep.memory.target_energy_dropoff_id);
 
+    this.targetSource = <Structure>creep.pos.findClosestByPath<Container | Storage>(FIND_STRUCTURES, {
+      filter: (s: Container | Storage) => (s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_CONTAINER)
+        && s.store[RESOURCE_ENERGY] >= creep.carryCapacity
+    });
+
+    this.targetEnergyDropOff = <Controller>Game.getObjectById<Controller>(this.creep.memory.target_energy_dropoff_id);
   }
 
   public isBagFull(): boolean {
@@ -32,7 +36,7 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
   }
 
   public tryHarvest(): number {
-    return this.creep.harvest(this.targetSource);
+    return this.creep.withdraw(this.targetSource, RESOURCE_ENERGY);
   }
 
   public moveToHarvest(): void {
@@ -42,7 +46,7 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
   }
 
   public tryEnergyDropOff(): number {
-    return this.creep.transfer(this.targetEnergyDropOff, RESOURCE_ENERGY);
+    return this.creep.upgradeController(this.targetEnergyDropOff);
   }
 
   public moveToDropEnergy(): void {

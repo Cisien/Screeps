@@ -2,7 +2,7 @@ import CreepAction, { ICreepAction } from "./creepAction";
 
 export interface IBuilder {
 
-  targetSource: Source;
+  targetSource: Structure;
   buildTarget: ConstructionSite;
 
   isBagFull(): boolean;
@@ -16,22 +16,26 @@ export interface IBuilder {
 
 export default class Builder extends CreepAction implements IBuilder, ICreepAction {
 
-  public targetSource: Source;
+  public targetSource: Structure;
   public buildTarget: ConstructionSite
 
   public setCreep(creep: Creep) {
     super.setCreep(creep);
 
-    this.targetSource = <Source>Game.getObjectById<Source>(this.creep.memory.target_source_id);
+    this.targetSource = <Structure>creep.pos.findClosestByPath<Container | Storage>(FIND_STRUCTURES, {
+      filter: (s: Container | Storage) => (s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_CONTAINER)
+      && s.store[RESOURCE_ENERGY] >= creep.carryCapacity
+    });
+
     this.buildTarget = <ConstructionSite>creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
-}
+  }
 
   public isBagFull(): boolean {
     return (this.creep.carry.energy === this.creep.carryCapacity);
   }
 
   public tryHarvest(): number {
-    return this.creep.harvest(this.targetSource);
+    return this.creep.withdraw(this.targetSource, RESOURCE_ENERGY);
   }
 
   public moveToHarvest(): void {

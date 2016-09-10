@@ -10,7 +10,6 @@ export function loadSources() {
 
   if (Config.VERBOSE) {
     console.log(sourceCount + " sources in room.");
-    console.log("this is a change")
   }
 }
 

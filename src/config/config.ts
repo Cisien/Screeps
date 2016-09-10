@@ -7,22 +7,27 @@ export const VERBOSE: boolean = true;
 /**
  * @type {number}
  */
-export const MAX_HARVESTERS_PER_SOURCE: number = 4;
+export const MAX_HARVESTERS: number = 2;
 
 /**
  * Enable this to use the experimental PathFinder class.
  */
 export const USE_PATHFINDER: boolean = true;
 
-/**
- * Minimum number of ticksToLive before a Creep before they go to renew.
- * @type {number}
- */
-export const DEFAULT_MIN_LIFE_BEFORE_NEEDS_REFILL: number = 700;
+export const MAX_UPGRADERS: number = 5;
 
+export const MAX_BUILDERS: number = 3;
 
-export const MAX_UPGRADERS_PER_SOURCE: number = 2;
+export const MAX_REPAIRERS: number = 2;
 
-export const MAX_BUILDERS_PER_SOURCE: number = 1;
+export const MAX_MOVERS: number = 3
 
-export const MAX_REPAIRERS_PER_SOURCE: number = 1;
+export const HARVESTER_PARTS: string[] = [MOVE, WORK, WORK, WORK, WORK];
+
+export const BUILDER_PARTS: string[] = [MOVE, CARRY, CARRY, WORK];
+
+export const UPGRADER_PARTS: string[] = [MOVE, CARRY, CARRY, WORK];
+
+export const REPAIRER_PARTS: string[] = [MOVE, CARRY, CARRY, WORK];
+
+export const MOVER_PARTS: string[] = [MOVE, CARRY, CARRY, WORK];
