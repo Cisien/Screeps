@@ -1,14 +1,14 @@
 import CreepAction, { ICreepAction } from "./creepAction";
+import * as SpawnManager from '../spawns/spawnManager';
+import * as SourceManager from '../sources/sourceManager';
+import * as Config from '../../config/config';
 
 export interface IRepairer {
 
-  targetSource: Structure;
-  repairTarget: Structure;
-
   isBagFull(): boolean;
-  tryHarvest(): number;
+  tryHarvest(): ResponseCode;
   moveToHarvest(): void;
-  tryRepair(): number;
+  tryRepair(): ResponseCode;
   moveToRepair(): void;
 
   action(): boolean;
@@ -16,19 +16,41 @@ export interface IRepairer {
 
 export default class Repairer extends CreepAction implements IRepairer, ICreepAction {
 
-  public targetSource: Structure;
-  public repairTarget: Structure
+  public targetSource: Structure<StructureContainer | StructureStorage>;
+  public repairTarget: Structure<any> | null;
+
+  public static spawn(): ResponseCode | CreepName {
+    let bodyParts = Config.REPAIRER_PARTS;
+    let properties: { [key: string]: any } = {
+      renew_station_id: SpawnManager.getFirstSpawn().id,
+      role: "repairer",
+      target_source_id: SourceManager.sources[SourceManager.sourceCount - 1].id,
+      working: false
+    }
+
+    let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
+
+    if (status == OK) {
+      status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    }
+
+    if (Config.VERBOSE && !(status < 0)) {
+      console.log("Started creating new Repairer");
+    }
+    return status;
+  }
 
   public setCreep(creep: Creep) {
     super.setCreep(creep);
 
-    this.targetSource = <Structure>creep.pos.findClosestByPath<Container | Storage>(FIND_STRUCTURES, {
-      filter: (s: Container | Storage) => (s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_CONTAINER)
-      && s.store[RESOURCE_ENERGY] >= creep.carryCapacity
-    });
+    this.targetSource = <Structure<StructureContainer | StructureStorage>>creep.pos
+      .findClosestByPath<StructureContainer | StructureStorage>(FIND_STRUCTURES, {
+        filter: (s: Container | Storage) => (s instanceof StructureStorage || s instanceof StructureContainer)
+          && s.store.energy >= creep.carryCapacity
+      });
 
-    this.repairTarget = creep.pos.findClosestByPath<Structure>(FIND_STRUCTURES, {
-      filter: (s: Structure) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART)
+    this.repairTarget = creep.pos.findClosestByPath<Structure<any>>(FIND_STRUCTURES, {
+      filter: (s: Structure<any>) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART)
     });
   }
 
@@ -36,7 +58,7 @@ export default class Repairer extends CreepAction implements IRepairer, ICreepAc
     return (this.creep.carry.energy === this.creep.carryCapacity);
   }
 
-  public tryHarvest(): number {
+  public tryHarvest(): ResponseCode {
     return this.creep.withdraw(this.targetSource, RESOURCE_ENERGY);
   }
 
@@ -46,24 +68,33 @@ export default class Repairer extends CreepAction implements IRepairer, ICreepAc
     }
   }
 
-  public tryRepair(): number {
+  public tryRepair(): ResponseCode {
+    if (this.repairTarget === null) {
+      return ERR_INVALID_ARGS;
+    }
+
     return this.creep.repair(this.repairTarget);
   }
 
   public moveToRepair(): void {
+    if (this.repairTarget === null) {
+      return;
+    }
+
     if (this.tryRepair() === ERR_NOT_IN_RANGE) {
       this.moveTo(this.repairTarget);
     }
   }
 
   public action(): boolean {
-    if (this.creep.memory.working && this.creep.carry.energy == 0) {
-      this.creep.memory.working = false;
+    if (this.creep.memory['working'] && this.creep.carry.energy == 0) {
+      this.creep.memory['working'] = false;
     }
-    if (!this.creep.memory.working && this.creep.carry.energy == this.creep.carryCapacity) {
-      this.creep.memory.working = true;
+    if (!this.creep.memory['working'] && this.creep.carry.energy == this.creep.carryCapacity) {
+      this.creep.memory['working'] = true;
     }
-    if (this.creep.memory.working) {
+
+    if (this.creep.memory['working']) {
       this.moveToRepair();
     } else {
       this.moveToHarvest();

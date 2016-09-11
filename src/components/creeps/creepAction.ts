@@ -7,7 +7,7 @@ export interface ICreepAction {
   /**
    * Wrapper for Creep.moveTo() method.
    */
-  moveTo(target: RoomPosition | { pos: RoomPosition }): number;
+  moveTo(target: RoomObject | RoomPosition): ResponseCode;
 
   action(): boolean;
 }
@@ -18,10 +18,10 @@ export default class CreepAction implements ICreepAction {
 
   public setCreep(creep: Creep) {
     this.creep = creep;
-    this.renewStation = <Spawn>Game.getObjectById<Spawn>(this.creep.memory.renew_station_id);
+
   }
 
-  public moveTo(target: RoomPosition | { pos: RoomPosition }) {
+  public moveTo(target: RoomObject | RoomPosition) {
     return this.creep.moveTo(target);
   }
 

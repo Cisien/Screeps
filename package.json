@@ -20,7 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "deep-equal": "^1.0.1",
-    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp": "github:gulpjs/gulp.git#4.0",
     "gulp-clean": "^0.3.2",
     "gulp-collect": "^0.1.0",
     "gulp-rename": "^1.2.2",

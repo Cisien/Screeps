@@ -1,8 +1,5 @@
-///<reference path="../../../typings/globals/lodash/index.d.ts" />
 import * as Config from "./../../config/config";
-import * as SourceManager from "./../sources/sourceManager";
 import * as SpawnManager from "./../spawns/spawnManager";
-import * as RoomManager from "./../rooms/roomManager";
 
 import CreepAction from "./creepAction";
 import Harvester from "./harvester";
@@ -10,6 +7,7 @@ import Upgrader from "./upgrader";
 import Builder from "./builder";
 import Repairer from "./repairer";
 import EnergyMover from "./energyMover";
+import Miner from "./miner";
 
 export let creeps: { [creepName: string]: Creep };
 export let creepNames: string[] = [];
@@ -18,6 +16,7 @@ export let upgraderCount: number = 0;
 export let builderCount: number = 0;
 export let repairerCount: number = 0;
 export let energyMoverCount: number = 0;
+export let minerCount: number = 0;
 export let creepCount: number = 0;
 
 export let workers: CreepAction[] = [];
@@ -25,6 +24,7 @@ export let harvesters: Harvester[] = [];
 export let upgraders: Upgrader[] = [];
 export let builders: Builder[] = [];
 export let repairers: Repairer[] = [];
+export let miners: Miner[] = [];
 export let energyMovers: EnergyMover[] = [];
 
 export function loadCreeps(): void {
@@ -36,6 +36,7 @@ export function loadCreeps(): void {
   this.builderCount = 0;
   this.repairerCount = 0;
   this.energyMoverCount = 0;
+  this.minerCount = 0;
 
   this.workers = [];
   this.harvesters = [];
@@ -43,9 +44,10 @@ export function loadCreeps(): void {
   this.builders = [];
   this.repairers = [];
   this.energyMovers = [];
+  this.miners = [];
 
   _.forEach(creeps, (c: Creep) => {
-    switch (c.memory.role) {
+    switch (c.memory['role']) {
       case 'harvester': {
         this.harvesterCount++;
         let creep = new Harvester();
@@ -86,6 +88,14 @@ export function loadCreeps(): void {
         this.workers.push(creep);
       }
         break;
+      case 'miner': {
+        this.minerCount++;
+        let creep = new Miner();
+        creep.setCreep(c);
+        this.miners.push(creep);
+        this.workers.push(creep);
+      }
+        break;
     }
   });
   _loadCreepNames();
@@ -94,137 +104,34 @@ export function loadCreeps(): void {
     console.log(creepCount + " creeps found in the playground.");
   }
 }
-export function createHarvester(): number | string {
-  let bodyParts: string[] = Config.HARVESTER_PARTS;
-
-  let workedSources: {} = _.countBy(this.harvesters, (c: Harvester) => c.creep.memory.target_source_id);
-
-  let leastUsedSource: string = '';
-  let leastUsedSourceCount: number = 1000;
-
-
-  for (let src of SourceManager.sources) {
-    if (!workedSources[src.id]) {
-      console.log("no harvesters")
-      leastUsedSource = src.id;
-      leastUsedSourceCount = 0;
-      break;
-    }
-  }
-
-  if (!leastUsedSource || leastUsedSource === '') {
-    console.log("Unable to find source to assign to new harvester, aborting!")
-    return -1;
-  }
-
-  console.log("least used source is " + leastUsedSource + " with " + leastUsedSourceCount + " harvesters assigned.");
-  let properties: { [key: string]: any } = {
-    role: "harvester",
-    target_source_id: leastUsedSource,
-    working: false
-  };
-
-  let status: number | string = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-  if (status === OK) {
-    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-
-    if (Config.VERBOSE && !(status < 0)) {
-      console.log("Started creating new Harvester");
-    }
-  }
-
-  return status;
+export function createHarvester(): ResponseCode | CreepName {
+  return Harvester.spawn(this.harvesters);
 }
 
-export function createUpgrader(): number | string {
-  let bodyParts: string[] = Config.UPGRADER_PARTS;
-
-  let room: Room = RoomManager.getFirstRoom();
-  let dropOffId: any;
-
-  if (room) {
-    var controller: any = room.controller
-    if (controller) {
-      dropOffId = controller.id;
-    }
-  }
-
-  let properties: { [key: string]: any } = {
-    renew_station_id: SpawnManager.getFirstSpawn().id,
-    role: "upgrader",
-    target_energy_dropoff_id: dropOffId,
-    target_source_id: SourceManager.getFirstSource().id,
-    working: false
-  };
-
-  let status: number | string = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-
-  if (status === OK) {
-    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-  }
-  else {
-    console.log("Couldnt's spawn new Upgrader code: " + status);
-  }
-
-  if (Config.VERBOSE && !(status < 0)) {
-    console.log("Started creating new Upgrader");
-  }
-
-  return status;
+export function createMiner(): ResponseCode | CreepName {
+  return Miner.spawn(this.miners);
 }
 
-export function createBuilder(): number | string {
-  let bodyParts: string[] = Config.BUILDER_PARTS;
-  let properties: { [key: string]: any } = {
-    renew_station_id: SpawnManager.getFirstSpawn().id,
-    role: "builder",
-    target_source_id: SourceManager.sources[SourceManager.sourceCount - 1].id,
-    working: false
-  }
-
-  let status: number | string = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-
-  if (status == OK) {
-    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-  }
-
-  if (Config.VERBOSE && !(status < 0)) {
-    console.log("Started creating new Builder");
-  }
-
-  return status;
+export function createUpgrader(): ResponseCode | CreepName {
+  return Upgrader.spawn();
 }
 
-export function createRepairer(): number | string {
-  let bodyParts: string[] = Config.REPAIRER_PARTS;
-  let properties: { [key: string]: any } = {
-    renew_station_id: SpawnManager.getFirstSpawn().id,
-    role: "repairer",
-    target_source_id: SourceManager.sources[SourceManager.sourceCount - 1].id,
-    working: false
-  }
+export function createBuilder(): ResponseCode | CreepName {
+  return Builder.spawn();
+}
 
-  let status: number | string = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-
-  if (status == OK) {
-    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-  }
-
-  if (Config.VERBOSE && !(status < 0)) {
-    console.log("Started creating new Repairer");
-  }
-
-  return status;
+export function createRepairer(): ResponseCode | CreepName {
+  return Repairer.spawn();
 }
 
 
-export function createEnergyMover(): number | string {
-  let bodyParts: string[] = Config.MOVER_PARTS;
+export function createEnergyMover(): ResponseCode | CreepName {
+  let bodyParts = Config.MOVER_PARTS;
   let properties: { [key: string]: any } = {
     role: "energyMover",
     working: false
   };
-  let status: number | string = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
+  let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
   if (status === OK) {
     status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
 
@@ -238,7 +145,7 @@ export function createEnergyMover(): number | string {
 
 
 export function doTickWork() {
-  for(let creep of this.workers) {
+  for (let creep of this.workers) {
     creep.action();
   }
 }
@@ -249,8 +156,13 @@ export function isHarvesterLimitFull(): boolean {
   return Config.MAX_HARVESTERS <= this.harvesterCount;
 }
 
-export function isUpgraderLimitFull(): boolean {
+export function isMinerLimitFull(): boolean {
+  console.log(this.minerCount + ' miners');
 
+  return Config.MAX_MINERS <= this.minerCount;
+}
+
+export function isUpgraderLimitFull(): boolean {
   console.log(this.upgraderCount + ' upgraders');
 
   return Config.MAX_UPGRADERS <= this.upgraderCount;
