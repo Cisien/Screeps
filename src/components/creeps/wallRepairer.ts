@@ -2,7 +2,7 @@ import CreepAction, { ICreepAction } from "./creepAction";
 import * as SpawnManager from '../spawns/spawnManager';
 import * as Config from '../../config/config';
 
-export interface IRepairer {
+export interface IWallRepairer {
 
   tryRepair(): ResponseCode;
   moveToRepair(): void;
@@ -10,14 +10,14 @@ export interface IRepairer {
   action(): boolean;
 }
 
-export default class Repairer extends CreepAction implements IRepairer, ICreepAction {
+export default class WallRepairer extends CreepAction implements IWallRepairer, ICreepAction {
 
-  public repairTarget: Structure<any> | null;
+  public repairTarget: Structure<StructureWall | StructureRampart> | null;
 
   public static spawn(): ResponseCode | CreepName {
     let bodyParts = Config.REPAIRER_PARTS;
     let properties: { [key: string]: any } = {
-      role: "repairer",
+      role: "wallRepairer",
       working: false
     }
 

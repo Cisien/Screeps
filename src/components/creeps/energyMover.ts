@@ -1,29 +1,43 @@
 import CreepAction, { ICreepAction } from "./creepAction";
+import * as SpawnManager from '../spawns/spawnManager';
+import * as Config from '../../config/config';
 
 export interface IEnergyMover {
 
-  targetSource: Structure<Storage | Container> | null;
   targetEnergyDropOff: Structure<any>
 
-  isBagFull(): boolean;
-  tryHarvest(): ResponseCode;
-  moveToHarvest(): void;
   tryEnergyDropOff(): ResponseCode;
   moveToDropEnergy(): void;
 
   action(): boolean;
 }
 
-
 export default class EnergyMover extends CreepAction implements IEnergyMover, ICreepAction {
 
-  public targetSource: Structure<StructureStorage | StructureContainer> | null;
   public targetEnergyDropOff: Structure<any>;
+
+public static spawn(): ResponseCode | CreepName {
+    let bodyParts = Config.MOVER_PARTS;
+  let properties: { [key: string]: any } = {
+    role: "energyMover",
+    working: false
+  };
+  let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
+  if (status === OK) {
+    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+
+    if (Config.VERBOSE && !(status < 0)) {
+      console.log("Started creating new EnergyMover");
+    }
+  }
+
+  return status;
+}
 
   public setCreep(creep: Creep) {
     super.setCreep(creep);
 
-    this.targetSource = creep.pos.findClosestByPath<Structure<StructureStorage | StructureContainer>>(FIND_STRUCTURES, {
+    this.targetStorage = creep.pos.findClosestByPath<Structure<StructureStorage | StructureContainer>>(FIND_STRUCTURES, {
       filter: (s: Structure<StructureStorage | StructureContainer>) => (s instanceof StructureStorage || s instanceof StructureContainer)
         && s.store.energy >= creep.carryCapacity
     });
@@ -36,25 +50,6 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
       });
   }
 
-  public isBagFull(): boolean {
-    return (this.creep.carry.energy === this.creep.carryCapacity);
-  }
-
-  public tryHarvest(): ResponseCode {
-    if (this.targetSource === null) {
-      return ERR_INVALID_ARGS;
-    }
-    return this.creep.withdraw(this.targetSource, RESOURCE_ENERGY);
-  }
-
-  public moveToHarvest(): void {
-    if (this.targetSource === null) {
-      return;
-    }
-    if (this.tryHarvest() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.targetSource);
-    }
-  }
 
   public tryEnergyDropOff(): ResponseCode {
     return this.creep.transfer(this.targetEnergyDropOff, RESOURCE_ENERGY);
@@ -77,7 +72,7 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
     if (this.creep.memory['working']) {
       this.moveToDropEnergy();
     } else {
-      this.moveToHarvest();
+      this.moveToWithdraw();
     }
 
     return true;

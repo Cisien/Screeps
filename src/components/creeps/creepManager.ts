@@ -1,5 +1,4 @@
 import * as Config from "./../../config/config";
-import * as SpawnManager from "./../spawns/spawnManager";
 
 import CreepAction from "./creepAction";
 import Harvester from "./harvester";
@@ -126,21 +125,7 @@ export function createRepairer(): ResponseCode | CreepName {
 
 
 export function createEnergyMover(): ResponseCode | CreepName {
-  let bodyParts = Config.MOVER_PARTS;
-  let properties: { [key: string]: any } = {
-    role: "energyMover",
-    working: false
-  };
-  let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-  if (status === OK) {
-    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-
-    if (Config.VERBOSE && !(status < 0)) {
-      console.log("Started creating new EnergyMover");
-    }
-  }
-
-  return status;
+  return EnergyMover.spawn();
 }
 
 

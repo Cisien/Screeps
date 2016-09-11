@@ -17,7 +17,7 @@ export interface IHarvester {
 export default class Harvester extends CreepAction implements IHarvester, ICreepAction {
 
   public targetSource: Source;
-  public storage: StructureSpawn | StructureExtension;
+  public targetEnergyStorage: Structure<StructureSpawn | StructureExtension> | null;
 
   public static spawn(existingHarvesters: Harvester[]): ResponseCode | CreepName {
     let bodyParts = Config.HARVESTER_PARTS;
@@ -65,7 +65,7 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
     super.setCreep(creep);
 
     this.targetSource = <Source>Game.getObjectById<Source>(this.creep.memory["target_source_id"]);
-    this.storage = <StructureSpawn | StructureExtension>creep.pos.findClosestByPath(FIND_STRUCTURES, {
+    this.targetEnergyStorage = creep.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: (s: Spawn | Extension) => (s instanceof StructureSpawn || s instanceof StructureExtension)
         && s.energy < s.energyCapacity
     })
@@ -76,14 +76,12 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
   }
 
   public tryHarvest(): ResponseCode {
-    if (this.storage && this.storage[0] && this.storage[0].store.energy === this.storage[0].storeCapacity) {
-      return ERR_FULL;
-    }
 
     return this.creep.harvest(this.targetSource);
   }
 
   public moveToHarvest(): void {
+
     if (this.tryHarvest() === ERR_NOT_IN_RANGE) {
       this.moveTo(this.targetSource);
     } else {
@@ -97,15 +95,22 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
   }
 
   public tryEnergyDropOff(): ResponseCode {
-    return this.creep.transfer(this.storage, RESOURCE_ENERGY);
+    if(this.targetEnergyStorage === null){
+      return ERR_INVALID_TARGET;
+    }
+
+    return this.creep.transfer(this.targetEnergyStorage, RESOURCE_ENERGY);
   }
 
   public moveToDropEnergy(): void {
+    if(this.targetEnergyStorage === null){
+      return;
+    }
+
     if (this.tryEnergyDropOff() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.storage);
+      this.moveTo(this.targetEnergyStorage);
     }
   }
-
 
   public action(): boolean {
     if (this.creep.memory['working'] && this.creep.carry.energy == 0) {

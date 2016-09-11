@@ -43,13 +43,11 @@ export default class Miner extends CreepAction implements IMiner, ICreepAction {
       working: false
     };
 
-    let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-    if (status === OK) {
-      status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-
-      if (Config.VERBOSE && !(status < 0)) {
-        console.log("Started creating new Harvester");
-      }
+    let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    console.log(status);
+    console.log(status);
+    if (Config.VERBOSE && !(status < 0)) {
+      console.log("Started creating new Miner");
     }
     return status;
   }
@@ -105,7 +103,7 @@ export default class Miner extends CreepAction implements IMiner, ICreepAction {
       var nearbyStorage = this.targetSource.pos.findInRange<Structure<StructureStorage | StructureContainer>>(FIND_STRUCTURES, 1, {
         filter: (s: StructureStorage | StructureContainer) => s instanceof StructureStorage || s instanceof StructureContainer
       });
-      if(nearbyStorage){
+      if (nearbyStorage) {
         this.moveTo(nearbyStorage[0]);
       }
     }

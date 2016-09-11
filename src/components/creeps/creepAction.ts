@@ -1,6 +1,5 @@
 export interface ICreepAction {
   creep: Creep;
-  renewStation: Spawn;
 
   setCreep(creep: Creep): void;
 
@@ -9,12 +8,14 @@ export interface ICreepAction {
    */
   moveTo(target: RoomObject | RoomPosition): ResponseCode;
 
+  targetStorage: Structure<StructureStorage | StructureContainer> | null;
   action(): boolean;
 }
 
 export default class CreepAction implements ICreepAction {
   public creep: Creep;
-  public renewStation: Spawn;
+
+  targetStorage: Structure<StructureStorage | StructureContainer> | null;
 
   public setCreep(creep: Creep) {
     this.creep = creep;
@@ -23,6 +24,22 @@ export default class CreepAction implements ICreepAction {
 
   public moveTo(target: RoomObject | RoomPosition) {
     return this.creep.moveTo(target);
+  }
+
+  public tryWithdraw(): ResponseCode {
+    if (this.targetStorage === null) {
+      return ERR_INVALID_ARGS;
+    }
+    return this.creep.withdraw(this.targetStorage, RESOURCE_ENERGY);
+  }
+
+  public moveToWithdraw(): void {
+    if (this.targetStorage === null) {
+      return;
+    }
+    if (this.tryWithdraw() === ERR_NOT_IN_RANGE) {
+      this.moveTo(this.targetStorage);
+    }
   }
 
   public action(): boolean {

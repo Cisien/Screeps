@@ -1,17 +1,9 @@
 import CreepAction, { ICreepAction } from "./creepAction";
 import * as SpawnManager from '../spawns/spawnManager';
-import * as SourceManager from '../sources/sourceManager';
 import * as Config from '../../config/config';
 import * as RoomManager from '../rooms/roomManager';
 
 export interface IUpgrader {
-
-  targetSource: Structure<StructureStorage | StructureContainer> | null;
-  targetEnergyDropOff: Controller;
-
-  isBagFull(): boolean;
-  tryHarvest(): ResponseCode;
-  moveToHarvest(): void;
   tryEnergyDropOff(): ResponseCode;
   moveToDropEnergy(): void;
 
@@ -20,8 +12,7 @@ export interface IUpgrader {
 
 export default class Upgrader extends CreepAction implements IUpgrader, ICreepAction {
 
-  public targetSource: Structure<StructureStorage | StructureContainer> | null;
-  public targetEnergyDropOff: Controller
+  public targetEnergyDropOff: StructureController | null
 
   public static spawn(): ResponseCode | CreepName {
     let bodyParts = Config.UPGRADER_PARTS;
@@ -37,21 +28,12 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
     }
 
     let properties: { [key: string]: any } = {
-      renew_station_id: SpawnManager.getFirstSpawn().id,
       role: "upgrader",
       target_energy_dropoff_id: dropOffId,
-      target_source_id: SourceManager.getFirstSource().id,
       working: false
     };
 
-    let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-
-    if (status === OK) {
-      status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-    }
-    else {
-      console.log("Couldnt's spawn new Upgrader code: " + status);
-    }
+    let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
 
     if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new Upgrader");
@@ -65,40 +47,26 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
 
     //this.targetSource = <Source>Game.getObjectById<Source>('579faa780700be0674d31086');
 
-    this.targetSource = creep.pos.findClosestByPath<Structure<StructureStorage | StructureContainer>>(FIND_STRUCTURES, {
+    this.targetStorage = creep.pos.findClosestByPath<Structure<StructureStorage | StructureContainer>>(FIND_STRUCTURES, {
       filter: (s: Structure<StructureStorage | StructureContainer>) => (s instanceof StructureStorage || s instanceof StructureContainer)
         && s.store.energy >= creep.carryCapacity
     });
 
-    this.targetEnergyDropOff = <StructureController>Game.getObjectById<StructureController>(this.creep.memory["target_energy_dropoff_id"]);
-  }
-
-  public isBagFull(): boolean {
-    return (this.creep.carry.energy === this.creep.carryCapacity);
-  }
-
-  public tryHarvest(): ResponseCode {
-    if (this.targetSource === null) {
-      return ERR_INVALID_TARGET;
-    }
-    return this.creep.withdraw(this.targetSource, RESOURCE_ENERGY);
-  }
-
-  public moveToHarvest(): void {
-    if (this.targetSource === null) {
-      return;
-    }
-
-    if (this.tryHarvest() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.targetSource);
-    }
+    this.targetEnergyDropOff = Game.getObjectById<StructureController>(this.creep.memory["target_energy_dropoff_id"]);
   }
 
   public tryEnergyDropOff(): ResponseCode {
+    if (this.targetEnergyDropOff === null) {
+      return ERR_INVALID_TARGET;
+    }
     return this.creep.upgradeController(this.targetEnergyDropOff);
   }
 
   public moveToDropEnergy(): void {
+    if (this.targetEnergyDropOff === null) {
+      return;
+    }
+
     if (this.tryEnergyDropOff() === ERR_NOT_IN_RANGE) {
       this.moveTo(this.targetEnergyDropOff);
     }
@@ -115,7 +83,7 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
     if (this.creep.memory['working']) {
       this.moveToDropEnergy();
     } else {
-      this.moveToHarvest();
+      this.moveToWithdraw();
     }
     return true;
   }
