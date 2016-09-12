@@ -47,6 +47,7 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
         filter: (s: Spawn | Extension | Tower) => (s instanceof StructureSpawn
           || s instanceof StructureExtension
           || s instanceof StructureTower)
+          && s.energy < s.energyCapacity
       });
   }
 
