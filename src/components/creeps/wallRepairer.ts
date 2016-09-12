@@ -1,78 +1,84 @@
 import CreepAction, { ICreepAction } from "./creepAction";
 import * as SpawnManager from '../spawns/spawnManager';
 import * as Config from '../../config/config';
+import IRepairer from './repairer';
 
-export interface IWallRepairer {
+export default class WallRepairer extends CreepAction implements IRepairer, ICreepAction {
 
-  tryRepair(): ResponseCode;
-  moveToRepair(): void;
+    public repairTarget: Structure<StructureWall | StructureRampart> | null;
 
-  action(): boolean;
-}
+    public static spawn(): ResponseCode | CreepName {
+        let bodyParts = Config.REPAIRER_PARTS;
+        let properties: { [key: string]: any } = {
+            role: "wallRepairer",
+            working: false
+        };
 
-export default class WallRepairer extends CreepAction implements IWallRepairer, ICreepAction {
-
-  public repairTarget: Structure<StructureWall | StructureRampart> | null;
-
-  public static spawn(): ResponseCode | CreepName {
-    let bodyParts = Config.REPAIRER_PARTS;
-    let properties: { [key: string]: any } = {
-      role: "wallRepairer",
-      working: false
+        let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+        console.log(status);
+        if (Config.VERBOSE && !(status < 0)) {
+            console.log("Started creating new wall Repairer");
+        }
+        return status;
     }
 
-    let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    public setCreep(creep: Creep) {
+        super.setCreep(creep);
 
-    if (Config.VERBOSE && !(status < 0)) {
-      console.log("Started creating new Repairer");
-    }
-    return status;
-  }
+        this.targetStorage = creep.pos.findClosestByPath<StructureContainer | StructureStorage>(FIND_STRUCTURES, {
+            filter: (s: Structure<StructureContainer | StructureStorage>) => (s instanceof StructureStorage || s instanceof StructureContainer)
+                && s.store.energy >= creep.carryCapacity
+        });
 
-  public setCreep(creep: Creep) {
-    super.setCreep(creep);
+        if (creep.room === undefined) {
+            return;
+        }
 
-    this.targetStorage = creep.pos.findClosestByPath<StructureContainer | StructureStorage>(FIND_STRUCTURES, {
-      filter: (s: Container | Storage) => (s instanceof StructureStorage || s instanceof StructureContainer)
-        && s.store.energy >= creep.carryCapacity
-    });
+        let ramparts = creep.room.find<Structure<StructureWall>>(FIND_STRUCTURES, {
+            filter: (s: Structure<StructureWall>) =>
+                (s instanceof StructureWall) && s.hits < s.hitsMax
+        });
 
-    this.repairTarget = creep.pos.findClosestByPath<Structure<any>>(FIND_STRUCTURES, {
-      filter: (s: Structure<any>) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART)
-    });
-  }
+        if (ramparts === null) {
+            return;
+        }
 
-  public tryRepair(): ResponseCode {
-    if (this.repairTarget === null) {
-      return ERR_INVALID_ARGS;
-    }
+        ramparts = _.sortBy(ramparts, (r: Structure<StructureRampart>) => r.hits);
 
-    return this.creep.repair(this.repairTarget);
-  }
-
-  public moveToRepair(): void {
-    if (this.repairTarget === null) {
-      return;
+        this.repairTarget = _.first(ramparts);
     }
 
-    if (this.tryRepair() === ERR_NOT_IN_RANGE) {
-      this.moveTo(this.repairTarget);
-    }
-  }
+    public tryRepair(): ResponseCode {
+        if (this.repairTarget === null) {
+            return ERR_INVALID_ARGS;
+        }
 
-  public action(): boolean {
-    if (this.creep.memory['working'] && this.creep.carry.energy == 0) {
-      this.creep.memory['working'] = false;
-    }
-    if (!this.creep.memory['working'] && this.creep.carry.energy == this.creep.carryCapacity) {
-      this.creep.memory['working'] = true;
+        return this.creep.repair(this.repairTarget);
     }
 
-    if (this.creep.memory['working']) {
-      this.moveToRepair();
-    } else {
-      this.moveToWithdraw();
+    public moveToRepair(): void {
+        if (this.repairTarget === null) {
+            return;
+        }
+
+        if (this.tryRepair() === ERR_NOT_IN_RANGE) {
+            this.moveTo(this.repairTarget);
+        }
     }
-    return true;
-  }
+
+    public action(): boolean {
+        if (this.creep.memory['working'] && this.creep.carry.energy == 0) {
+            this.creep.memory['working'] = false;
+        }
+        if (!this.creep.memory['working'] && this.creep.carry.energy == this.creep.carryCapacity) {
+            this.creep.memory['working'] = true;
+        }
+
+        if (this.creep.memory['working']) {
+            this.moveToRepair();
+        } else {
+            this.moveToWithdraw();
+        }
+        return true;
+    }
 }

@@ -34,7 +34,7 @@ export default class Upgrader extends CreepAction implements IUpgrader, ICreepAc
     };
 
     let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-
+    console.log(status);
     if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new Upgrader");
     }

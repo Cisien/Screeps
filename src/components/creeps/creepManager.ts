@@ -7,6 +7,8 @@ import Builder from "./builder";
 import Repairer from "./repairer";
 import EnergyMover from "./energyMover";
 import Miner from "./miner";
+import WallRepairer from "./wallRepairer";
+import RampartRepairer from './rampartRepairer';
 
 export let creeps: { [creepName: string]: Creep };
 export let creepNames: string[] = [];
@@ -16,6 +18,8 @@ export let builderCount: number = 0;
 export let repairerCount: number = 0;
 export let energyMoverCount: number = 0;
 export let minerCount: number = 0;
+export let wallRepairerCount: number = 0;
+export let rampartRepairerCount: number = 0;
 export let creepCount: number = 0;
 
 export let workers: CreepAction[] = [];
@@ -24,8 +28,10 @@ export let upgraders: Upgrader[] = [];
 export let builders: Builder[] = [];
 export let repairers: Repairer[] = [];
 export let miners: Miner[] = [];
+export let wallRepairers: WallRepairer[] = [];
+export let rampartRepairers: RampartRepairer[] = [];
 export let energyMovers: EnergyMover[] = [];
-
+export let song: string[] = Config.SONG.split("|");
 export function loadCreeps(): void {
   creeps = Game.creeps;
   creepCount = _.size(creeps);
@@ -36,6 +42,8 @@ export function loadCreeps(): void {
   this.repairerCount = 0;
   this.energyMoverCount = 0;
   this.minerCount = 0;
+  this.wallRepairerCount = 0;
+  this.rampartRepairerCount = 0;
 
   this.workers = [];
   this.harvesters = [];
@@ -44,6 +52,8 @@ export function loadCreeps(): void {
   this.repairers = [];
   this.energyMovers = [];
   this.miners = [];
+  this.wallRepairers = [];
+  this.rampartRepairers = [];
 
   _.forEach(creeps, (c: Creep) => {
     switch (c.memory['role']) {
@@ -95,6 +105,22 @@ export function loadCreeps(): void {
         this.workers.push(creep);
       }
         break;
+      case 'wallRepairer': {
+        this.wallRepairerCount++;
+        let creep = new WallRepairer();
+        creep.setCreep(c);
+        this.wallRepairers.push(creep);
+        this.workers.push(creep);
+      }
+        break;
+      case 'rampartRepairer': {
+        this.rampartRepairerCount++;
+        let creep = new RampartRepairer();
+        creep.setCreep(c);
+        this.rampartRepairers.push(creep);
+        this.workers.push(creep);
+      }
+        break;
     }
   });
   _loadCreepNames();
@@ -123,16 +149,23 @@ export function createRepairer(): ResponseCode | CreepName {
   return Repairer.spawn();
 }
 
-
 export function createEnergyMover(): ResponseCode | CreepName {
   return EnergyMover.spawn();
 }
 
+export function createWallRepairer(): ResponseCode | CreepName {
+  return WallRepairer.spawn();
+}
+
+export function createRampartRepairer(): ResponseCode | CreepName {
+  return RampartRepairer.spawn();
+}
 
 export function doTickWork() {
-  for (let creep of this.workers) {
+  _.forEach(this.workers, (creep: CreepAction) => {
+    creep.creep.say(this.song[Game.time % this.song.length], true);
     creep.action();
-  }
+  });
 }
 
 export function isHarvesterLimitFull(): boolean {
@@ -170,6 +203,19 @@ export function isEnergyMoverLimitFull(): boolean {
 
   return Config.MAX_MOVERS <= this.energyMoverCount;
 }
+
+export function isWallRepairerLimitFull(): boolean {
+  console.log(this.wallRepairerCount + ' wallRepairers');
+
+  return Config.MAX_WALL_REPAIRERS <= this.wallRepairerCount;
+}
+
+export function isRampartRepairerLimitFull(): boolean {
+  console.log(this.rampartRepairerCount + ' rampartRepairers');
+
+  return Config.MAX_RAMPART_REPAIRERS <= this.rampartRepairerCount;
+}
+
 
 function _loadCreepNames(): void {
   for (let creepName in creeps) {

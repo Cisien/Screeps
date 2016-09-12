@@ -16,23 +16,23 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
 
   public targetEnergyDropOff: Structure<any>;
 
-public static spawn(): ResponseCode | CreepName {
+  public static spawn(): ResponseCode | CreepName {
     let bodyParts = Config.MOVER_PARTS;
-  let properties: { [key: string]: any } = {
-    role: "energyMover",
-    working: false
-  };
-  let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-  if (status === OK) {
-    status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    let properties: { [key: string]: any } = {
+      role: "energyMover",
+      working: false
+    };
+
+    let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    console.log(status);
 
     if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new EnergyMover");
-    }
-  }
 
-  return status;
-}
+    }
+
+    return status;
+  }
 
   public setCreep(creep: Creep) {
     super.setCreep(creep);
@@ -46,7 +46,7 @@ public static spawn(): ResponseCode | CreepName {
       .findClosestByPath<Structure<any>>(FIND_STRUCTURES, {
         filter: (s: Spawn | Extension | Tower) => (s instanceof StructureSpawn
           || s instanceof StructureExtension
-          || s instanceof StructureTower) && s.energy < s.energyCapacity
+          || s instanceof StructureTower)
       });
   }
 

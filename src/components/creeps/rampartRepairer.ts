@@ -1,30 +1,23 @@
 import CreepAction, { ICreepAction } from "./creepAction";
 import * as SpawnManager from '../spawns/spawnManager';
 import * as Config from '../../config/config';
+import IRepairer from './repairer';
 
-export interface IRepairer {
+export default class RampartRepairer extends CreepAction implements IRepairer, ICreepAction {
 
-  tryRepair(): ResponseCode;
-  moveToRepair(): void;
-
-  action(): boolean;
-}
-
-export default class Repairer extends CreepAction implements IRepairer, ICreepAction {
-
-  public repairTarget: Structure<any> | null;
+  public repairTarget: Structure<StructureWall | StructureRampart> | null;
 
   public static spawn(): ResponseCode | CreepName {
     let bodyParts = Config.REPAIRER_PARTS;
     let properties: { [key: string]: any } = {
-      role: "repairer",
+      role: "rampartRepairer",
       working: false
     }
 
     let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
     console.log(status);
     if (Config.VERBOSE && !(status < 0)) {
-      console.log("Started creating new Repairer");
+      console.log("Started creating new Rampart Repairer");
     }
     return status;
   }
@@ -33,13 +26,26 @@ export default class Repairer extends CreepAction implements IRepairer, ICreepAc
     super.setCreep(creep);
 
     this.targetStorage = creep.pos.findClosestByPath<StructureContainer | StructureStorage>(FIND_STRUCTURES, {
-      filter: (s: Container | Storage) => (s instanceof StructureStorage || s instanceof StructureContainer)
+      filter: (s: Structure<StructureContainer | StructureStorage>) => (s instanceof StructureStorage || s instanceof StructureContainer)
         && s.store.energy >= creep.carryCapacity
     });
 
-    this.repairTarget = creep.pos.findClosestByPath<Structure<any>>(FIND_STRUCTURES, {
-      filter: (s: Structure<any>) => s.hits < s.hitsMax && (s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART)
+    if (creep.room === undefined) {
+      return;
+    }
+
+    let ramparts = creep.room.find<Structure<StructureRampart>>(FIND_STRUCTURES, {
+      filter: (s: Structure<StructureRampart>) =>
+        (s instanceof StructureRampart) && s.hits < s.hitsMax
     });
+
+    if (ramparts === null) {
+      return;
+    }
+
+    ramparts = _.sortBy(ramparts, (r: Structure<StructureRampart>) => r.hits);
+
+    this.repairTarget = _.first(ramparts);
   }
 
   public tryRepair(): ResponseCode {

@@ -4,17 +4,17 @@ import * as RoomManager from "./components/rooms/roomManager";
 import * as SpawnManager from "./components/spawns/spawnManager";
 import * as SourceManager from "./components/sources/sourceManager";
 import * as CreepManager from "./components/creeps/creepManager";
+import * as TowerManager from "./components/towers/towerManager";
 
-RoomManager.loadRooms();
-SpawnManager.loadSpawns();
-SourceManager.loadSources();
 
 if (Config.USE_PATHFINDER) {
   PathFinder.use(true);
 }
 
 export function loop() {
-
+  RoomManager.loadRooms();
+  SpawnManager.loadSpawns();
+  SourceManager.loadSources();
   MemoryManager.loadMemory();
   CreepManager.loadCreeps();
 
@@ -55,7 +55,21 @@ export function loop() {
     if (Config.VERBOSE) {
       console.log("Need more repairers!")
     }
+  } else if (!CreepManager.isRampartRepairerLimitFull()) {
+    CreepManager.createRampartRepairer();
+
+    if (Config.VERBOSE) {
+      console.log("Need more rampartRepairers!")
+    }
+  } else if (!CreepManager.isWallRepairerLimitFull()) {
+    CreepManager.createWallRepairer();
+
+    if (Config.VERBOSE) {
+      console.log("Need more wallRepairers!")
+    }
+
   }
 
   CreepManager.doTickWork();
+  TowerManager.doTickWork();
 }

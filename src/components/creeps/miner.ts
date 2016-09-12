@@ -33,7 +33,7 @@ export default class Miner extends CreepAction implements IMiner, ICreepAction {
 
     if (!leastUsedSource || leastUsedSource === '') {
       console.log("Unable to find source to assign to new miner, aborting!")
-      return -1;
+      return ERR_INVALID_TARGET;
     }
 
     console.log("least used source is " + leastUsedSource + " with " + leastUsedSourceCount + " harvesters assigned.");
@@ -44,7 +44,6 @@ export default class Miner extends CreepAction implements IMiner, ICreepAction {
     };
 
     let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-    console.log(status);
     console.log(status);
     if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new Miner");
@@ -77,12 +76,6 @@ export default class Miner extends CreepAction implements IMiner, ICreepAction {
 
     if (storage.store.energy === storage.storeCapacity) {
       return ERR_FULL;
-    }
-
-    if (Game.time % 2 === 0) {
-      this.creep.say('tick');
-    } else {
-      this.creep.say('tock')
     }
 
     if (this.targetSource === null) {

@@ -49,13 +49,11 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
       working: false
     };
 
-    let status: ResponseCode | CreepName = SpawnManager.getFirstSpawn().canCreateCreep(bodyParts, undefined);
-    if (status === OK) {
-      status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    console.log(status);
+    if (Config.VERBOSE && !(status < 0)) {
+      console.log("Started creating new Harvester");
 
-      if (Config.VERBOSE && !(status < 0)) {
-        console.log("Started creating new Harvester");
-      }
     }
 
     return status;
@@ -95,7 +93,7 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
   }
 
   public tryEnergyDropOff(): ResponseCode {
-    if(this.targetEnergyStorage === null){
+    if (this.targetEnergyStorage === null) {
       return ERR_INVALID_TARGET;
     }
 
@@ -103,7 +101,7 @@ export default class Harvester extends CreepAction implements IHarvester, ICreep
   }
 
   public moveToDropEnergy(): void {
-    if(this.targetEnergyStorage === null){
+    if (this.targetEnergyStorage === null) {
       return;
     }
 

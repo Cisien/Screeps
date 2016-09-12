@@ -23,8 +23,8 @@ export default class Builder extends CreepAction implements IBuilder, ICreepActi
       working: false
     }
 
-      let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-
+    let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
+    console.log(status);
     if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new Builder");
     }

@@ -23,6 +23,10 @@ export default class CreepAction implements ICreepAction {
   }
 
   public moveTo(target: RoomObject | RoomPosition) {
+    if (this.creep.fatigue > 0) {
+      return ERR_TIRED;
+    }
+
     return this.creep.moveTo(target);
   }
 
