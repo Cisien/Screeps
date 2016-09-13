@@ -163,7 +163,9 @@ export function createRampartRepairer(): ResponseCode | CreepName {
 
 export function doTickWork() {
   _.forEach(this.workers, (creep: CreepAction) => {
+    if(Config.SING){
     creep.creep.say(this.song[Game.time % this.song.length], true);
+    }
     creep.action();
   });
 }

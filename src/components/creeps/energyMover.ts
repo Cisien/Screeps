@@ -37,20 +37,57 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
   public setCreep(creep: Creep) {
     super.setCreep(creep);
 
-    this.targetStorage = creep.pos.findClosestByPath<Structure<StructureStorage | StructureContainer>>(FIND_STRUCTURES, {
-      filter: (s: Structure<StructureStorage | StructureContainer>) => (s instanceof StructureStorage || s instanceof StructureContainer)
-        && s.store.energy >= creep.carryCapacity
+    if (creep.room === undefined) {
+      throw "creep is not in a room!";
+
+    }
+
+    let storage = creep.room.find(FIND_STRUCTURES)
+
+    if (storage === null || storage === undefined) {
+      return;
+    }
+    let sortedStorage: (StructureStorage | StructureContainer)[] = [];
+
+    _.forEach(storage, (s) => {
+      if (s instanceof StructureContainer && s.store.energy >= creep.carryCapacity) {
+        sortedStorage.push(s);
+      }
     });
 
-    this.targetEnergyDropOff = <Structure<any>>creep.pos
-      .findClosestByPath<Structure<any>>(FIND_STRUCTURES, {
-        filter: (s: Spawn | Extension | Tower) => (s instanceof StructureSpawn
-          || s instanceof StructureExtension
-          || s instanceof StructureTower)
-          && s.energy < s.energyCapacity
+    if (sortedStorage.length === 0) {
+      _.forEach(storage, (s) => {
+        if (s instanceof StructureStorage && s.store.energy >= creep.carryCapacity) {
+          sortedStorage.push(s);
+        }
       });
-  }
+    }
 
+    this.targetStorage = _.first(sortedStorage);
+
+    let sorted: Structure<any>[] = [];
+    _.forEach(storage, (s) => {
+      if ((s instanceof StructureSpawn
+        || s instanceof StructureExtension
+        || s instanceof StructureTower)
+        && s.energy < s.energyCapacity) {
+        sorted.push(s);
+      }
+    });
+
+    if (sorted.length === 0) {
+      _.forEach(storage, (s) => {
+        if (s instanceof StructureStorage && s.store.energy < s.storeCapacity) {
+          sorted.push(s);
+        }
+      });
+    }
+
+    this.targetEnergyDropOff = _.first(sorted);
+
+    console.log(this.targetStorage);
+    console.log(this.targetEnergyDropOff);
+  }
 
   public tryEnergyDropOff(): ResponseCode {
     return this.creep.transfer(this.targetEnergyDropOff, RESOURCE_ENERGY);
