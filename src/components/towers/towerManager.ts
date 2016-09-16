@@ -23,7 +23,7 @@ export function doTickWork(): void {
   for (let action of this.towerActions) {
     _.forEach(this.towers, (tower: StructureTower) => {
       let actionCode = action.doAction(tower)
-      console.log(action.name + ' completed with code ' + actionCode);
+      //console.log(action.name + ' completed with code ' + actionCode);
       if (actionCode === OK) {
         return;
       }

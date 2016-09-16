@@ -24,7 +24,7 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
     };
 
     let status = SpawnManager.getFirstSpawn().createCreep(bodyParts, undefined, properties);
-    console.log(status);
+    //console.log(status);
 
     if (Config.VERBOSE && !(status < 0)) {
       console.log("Started creating new EnergyMover");
@@ -85,8 +85,8 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
 
     this.targetEnergyDropOff = _.first(sorted);
 
-    console.log(this.targetStorage);
-    console.log(this.targetEnergyDropOff);
+    //console.log(this.targetStorage);
+    //console.log(this.targetEnergyDropOff);
   }
 
   public tryEnergyDropOff(): ResponseCode {

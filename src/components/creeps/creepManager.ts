@@ -126,7 +126,7 @@ export function loadCreeps(): void {
   _loadCreepNames();
 
   if (Config.VERBOSE) {
-    console.log(creepCount + " creeps found in the playground.");
+    //console.log(creepCount + " creeps found in the playground.");
   }
 }
 export function createHarvester(): ResponseCode | CreepName {
@@ -171,49 +171,49 @@ export function doTickWork() {
 }
 
 export function isHarvesterLimitFull(): boolean {
-  console.log(this.harvesterCount + ' harvesters');
+  //console.log(this.harvesterCount + ' harvesters');
 
   return Config.MAX_HARVESTERS <= this.harvesterCount;
 }
 
 export function isMinerLimitFull(): boolean {
-  console.log(this.minerCount + ' miners');
+  //console.log(this.minerCount + ' miners');
 
   return Config.MAX_MINERS <= this.minerCount;
 }
 
 export function isUpgraderLimitFull(): boolean {
-  console.log(this.upgraderCount + ' upgraders');
+  //console.log(this.upgraderCount + ' upgraders');
 
   return Config.MAX_UPGRADERS <= this.upgraderCount;
 }
 
 export function isBuilderLimitFull(): boolean {
-  console.log(this.builderCount + ' builders');
+  //console.log(this.builderCount + ' builders');
 
   return Config.MAX_BUILDERS <= this.builderCount;
 }
 
 export function isRepairerLimitFull(): boolean {
-  console.log(this.repairerCount + ' repairers');
+  //console.log(this.repairerCount + ' repairers');
 
   return Config.MAX_REPAIRERS <= this.repairerCount;
 }
 
 export function isEnergyMoverLimitFull(): boolean {
-  console.log(this.energyMoverCount + ' energyMovers');
+  //console.log(this.energyMoverCount + ' energyMovers');
 
   return Config.MAX_MOVERS <= this.energyMoverCount;
 }
 
 export function isWallRepairerLimitFull(): boolean {
-  console.log(this.wallRepairerCount + ' wallRepairers');
+  //console.log(this.wallRepairerCount + ' wallRepairers');
 
   return Config.MAX_WALL_REPAIRERS <= this.wallRepairerCount;
 }
 
 export function isRampartRepairerLimitFull(): boolean {
-  console.log(this.rampartRepairerCount + ' rampartRepairers');
+  //console.log(this.rampartRepairerCount + ' rampartRepairers');
 
   return Config.MAX_RAMPART_REPAIRERS <= this.rampartRepairerCount;
 }
