@@ -1,4 +1,4 @@
-export const VERBOSE: boolean = true;
+export const VERBOSE: boolean = false;
 
 export const USE_PATHFINDER: boolean = true;
 
@@ -6,9 +6,9 @@ export const MAX_HARVESTERS: number = 0;
 
 export const MAX_MINERS: number = 2;
 
-export const MAX_UPGRADERS: number = 2;
+export const MAX_UPGRADERS: number = 4;
 
-export const MAX_BUILDERS: number = 0;
+export const MAX_BUILDERS: number = 1;
 
 export const MAX_REPAIRERS: number = 1;
 
@@ -16,7 +16,7 @@ export const MAX_MOVERS: number = 3;
 
 export const MAX_WALL_REPAIRERS: number = 0;
 
-export const MAX_RAMPART_REPAIRERS: number = 2;
+export const MAX_RAMPART_REPAIRERS: number = 1;
 
 export var minerDef: Object = {
   parts: {
