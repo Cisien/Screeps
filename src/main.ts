@@ -7,11 +7,11 @@ import * as CreepManager from "./components/creeps/creepManager";
 import * as TowerManager from "./components/towers/towerManager";
 
 
-if (Config.USE_PATHFINDER) {
-  PathFinder.use(true);
-}
-
 export function loop() {
+  if (Config.USE_PATHFINDER) {
+    PathFinder.use(true);
+  }
+
   RoomManager.loadRooms();
   SpawnManager.loadSpawns();
   SourceManager.loadSources();
