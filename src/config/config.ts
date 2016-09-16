@@ -18,6 +18,17 @@ export const MAX_WALL_REPAIRERS: number = 0;
 
 export const MAX_RAMPART_REPAIRERS: number = 2;
 
+export var minerDef: Object = {
+  parts: {
+    300: [MOVE, WORK, WORK],
+    550: [MOVE, WORK, WORK, WORK, WORK, WORK],
+    800: [MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK]
+  },
+  memory: {
+    role: 'harvester'
+  }
+}
+
 export const HARVESTER_PARTS: BodyPartType[] = [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK];
 
 export const MINER_PARTS: BodyPartType[] = [MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK];
