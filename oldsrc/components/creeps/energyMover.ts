@@ -44,7 +44,7 @@ export default class EnergyMover extends CreepAction implements IEnergyMover, IC
 
     let storage = creep.room.find(FIND_STRUCTURES)
 
-    if (storage === null || storage === undefined) {
+    if (storage === null) {
       return;
     }
     let sortedStorage: (StructureStorage | StructureContainer)[] = [];

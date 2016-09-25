@@ -3,6 +3,6 @@
   "dependencies": {},
   "globalDependencies": {
     "lodash": "registry:dt/lodash",
-    "screeps": "github:screepers/Screeps-Typescript-Declarations/dist/screeps.d.ts"
+    "screeps": "github:screepers/Screeps-Typescript-Declarations/dist/screeps.d.ts#TS2"
   }
 }
