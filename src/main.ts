@@ -1,8 +1,17 @@
 import * as telemetry from './lib/telemetry';
-import * as behaviors from './creeps/creeps'
+import * as creeps from './creeps/creeps'
 import * as spawns from './spawns/spawns';
 import * as towers from './towers/towers';
 import * as b3 from './lib/behavior3';
+import Profiler from './lib/profiling';
+
+let profiler = new Profiler();
+//profiler.enable();
+Game["profiler"] = profiler;
+profiler.registerObject(b3.BehaviorTree, b3.BehaviorTree.name);
+profiler.registerObject(creeps.CreepTree, creeps.CreepTree.name);
+profiler.registerObject(spawns.SpawnTree, spawns.SpawnTree.name);
+profiler.registerObject(towers.TowerTree, towers.TowerTree.name);
 
 telemetry.initialize();
 
@@ -15,11 +24,16 @@ if (Memory["_bt"] && Game.time % 1000) {
   }
 }
 
-let creepBehaviorTree = new b3.BehaviorTree(new behaviors.CreepTree());
+let creepBehaviorTree = new b3.BehaviorTree(new creeps.CreepTree());
 let spawnBehaviorTree = new b3.BehaviorTree(new spawns.SpawnTree());
 let towerBehaviorTree = new b3.BehaviorTree(new towers.TowerTree());
 
 export function loop() {
+  profiler.wrap(mainloop);
+}
+
+function mainloop() {
+
   PathFinder.use(true);
 
   let metrics: telemetry.Metrics = new telemetry.Metrics();

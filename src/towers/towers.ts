@@ -5,6 +5,7 @@ export class TowerTree extends b3.MemSequence implements b3.MemSequence {
   constructor() {
     super([new TowerAttackNode()]); // heal, repair, rampart repair, etc.
     this.id = TowerTree.name;
+    Game['profiler'].registerObject(TowerAttackNode, TowerAttackNode.name);
   }
 
   tick(tick: b3.Tick): b3.State {

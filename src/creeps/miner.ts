@@ -6,6 +6,10 @@ export default class MinerNode extends b3.MemSequence implements b3.MemSequence 
   constructor() {
     super([new PathToSourceNode(), new MoveToSourceNode(), new HarvestSourceNode()]);
     this.id = MinerNode.name
+
+    Game['profiler'].registerObject(PathToSourceNode, PathToSourceNode.name);
+    Game['profiler'].registerObject(MoveToSourceNode, MoveToSourceNode.name);
+    Game['profiler'].registerObject(HarvestSourceNode, HarvestSourceNode.name);
   }
 
   tick(tick: b3.Tick): b3.State {

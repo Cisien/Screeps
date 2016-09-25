@@ -8,6 +8,13 @@ export default class BuilderNode extends b3.MemSequence implements b3.MemSequenc
     super([new common.PathToEnergyNode(), new common.MoveToEnergyNode(), new common.PickupEnergyNode(),
     new PathToConstructionSiteNode(), new MoveToConstructionSiteNode(), new BuildNode()]);
     this.id = BuilderNode.name;
+
+    Game['profiler'].registerObject(common.PathToEnergyNode, common.PathToEnergyNode.name);
+    Game['profiler'].registerObject(common.MoveToEnergyNode, common.MoveToEnergyNode.name);
+    Game['profiler'].registerObject(common.PickupEnergyNode, common.PickupEnergyNode.name);
+    Game['profiler'].registerObject(PathToConstructionSiteNode, PathToConstructionSiteNode.name);
+    Game['profiler'].registerObject(MoveToConstructionSiteNode, MoveToConstructionSiteNode.name);
+    Game['profiler'].registerObject(BuildNode, BuildNode.name);
   }
 
   tick(tick: b3.Tick): b3.State {
@@ -33,7 +40,7 @@ class PathToConstructionSiteNode extends b3.BaseNode implements b3.BaseNode {
 
     let sites = creep.room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES);
 
-    if(!sites || sites.length === 0) {
+    if (!sites || sites.length === 0) {
       return b3.State.FAILURE
     }
 
@@ -85,9 +92,9 @@ class MoveToConstructionSiteNode extends b3.BaseNode implements b3.BaseNode {
 
 
     if (creep.pos.x === creep.memory.lastPos.x && creep.pos.y === creep.memory.lastPos.y) {
-      if(creep.memory.lastPos.ticks >= 5) {
-      delete creep.memory.path;
-      return b3.State.FAILURE;
+      if (creep.memory.lastPos.ticks >= 5) {
+        delete creep.memory.path;
+        return b3.State.FAILURE;
       } else {
         creep.memory.lastPos.ticks++;
         return b3.State.RUNNING;

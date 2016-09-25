@@ -8,6 +8,13 @@ export default class HaulerNode extends b3.MemSequence implements b3.MemSequence
     super([new common.PathToEnergyNode(), new common.MoveToEnergyNode(), new common.PickupEnergyNode(),
     new PathToStorageNode(), new MoveToStorageNode(), new TransferToStorageNode()]);
     this.id = HaulerNode.name;
+
+    Game['profiler'].registerObject(common.PathToEnergyNode, common.PathToEnergyNode.name);
+    Game['profiler'].registerObject(common.MoveToEnergyNode, common.MoveToEnergyNode.name);
+    Game['profiler'].registerObject(common.PickupEnergyNode, common.PickupEnergyNode.name);
+    Game['profiler'].registerObject(PathToStorageNode, PathToStorageNode.name);
+    Game['profiler'].registerObject(MoveToStorageNode, MoveToStorageNode.name);
+    Game['profiler'].registerObject(TransferToStorageNode, TransferToStorageNode.name);
   }
 
   tick(tick: b3.Tick): b3.State {

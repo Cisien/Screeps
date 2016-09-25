@@ -8,6 +8,13 @@ export default class UpgraderBehavior extends b3.MemSequence implements b3.MemSe
     super([new common.PathToEnergyNode(), new common.MoveToEnergyNode(), new common.PickupEnergyNode(),
     new PathToControllerBehavior(), new MoveToControllerBehavior(), new UpgradeControllerBehavior()]);
     this.id = UpgraderBehavior.name;
+
+    Game['profiler'].registerObject(common.PathToEnergyNode, common.PathToEnergyNode.name);
+    Game['profiler'].registerObject(common.MoveToEnergyNode, common.MoveToEnergyNode.name);
+    Game['profiler'].registerObject(common.PickupEnergyNode, common.PickupEnergyNode.name);
+    Game['profiler'].registerObject(PathToControllerBehavior, PathToControllerBehavior.name);
+    Game['profiler'].registerObject(MoveToControllerBehavior, MoveToControllerBehavior.name);
+    Game['profiler'].registerObject(UpgradeControllerBehavior, UpgradeControllerBehavior.name);
   }
 
   tick(tick: b3.Tick): b3.State {

@@ -17,6 +17,14 @@ export class CreepTree extends b3.Sequence implements b3.Sequence {
       new RampartBuildNode()
     ]);
     this.id = CreepTree.name
+
+    Game['profiler'].registerObject(MinerNode, MinerNode.name);
+    Game['profiler'].registerObject(HaulerNode, HaulerNode.name);
+    Game['profiler'].registerObject(UpgraderNode, UpgraderNode.name);
+    Game['profiler'].registerObject(BuilderNode, BuilderNode.name);
+    Game['profiler'].registerObject(RepairNode, RepairNode.name);
+    Game['profiler'].registerObject(RepairNode, RepairNode.name);
+    Game['profiler'].registerObject(RampartBuildNode, RampartBuildNode.name);
   }
   tick(tick: b3.Tick): b3.State {
     return super.tick(tick);

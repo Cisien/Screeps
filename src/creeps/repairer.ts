@@ -9,6 +9,13 @@ export default class RepairerNode extends b3.MemSequence implements b3.MemSequen
     super([new common.PathToEnergyNode(), new common.MoveToEnergyNode(), new common.PickupEnergyNode(),
     new PathToRepairSiteNode(), new repairCommon.MoveToRepairSiteNode(), new repairCommon.RepairNode()]);
     this.id = RepairerNode.name;
+
+    Game['profiler'].registerObject(common.PathToEnergyNode, common.PathToEnergyNode.name);
+    Game['profiler'].registerObject(common.MoveToEnergyNode, common.MoveToEnergyNode.name);
+    Game['profiler'].registerObject(common.PickupEnergyNode, common.PickupEnergyNode.name);
+    Game['profiler'].registerObject(PathToRepairSiteNode, PathToRepairSiteNode.name);
+    Game['profiler'].registerObject(repairCommon.MoveToRepairSiteNode, repairCommon.MoveToRepairSiteNode.name);
+    Game['profiler'].registerObject(repairCommon.RepairNode, repairCommon.RepairNode.name);
   }
 
   tick(tick: b3.Tick): b3.State {

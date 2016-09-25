@@ -14,6 +14,14 @@ export class SpawnTree extends b3.MemSequence implements b3.MemSequence {
       new SpawnWallRepairerNode(),
     ]);
     this.id = SpawnTree.name;
+    Game['profiler'].registerObject(SelectPartsForTierNode, SelectPartsForTierNode.name);
+    Game['profiler'].registerObject(SpawnMinerNode, SpawnMinerNode.name);
+    Game['profiler'].registerObject(SpawnHaulerNode, SpawnHaulerNode.name);
+    Game['profiler'].registerObject(SpawnUpgraderNode, SpawnUpgraderNode.name);
+    Game['profiler'].registerObject(SpawnRepairerNode, SpawnRepairerNode.name);
+    Game['profiler'].registerObject(SpawnBuilderNode, SpawnBuilderNode.name);
+    Game['profiler'].registerObject(SpawnRampartRepairerNode, SpawnRampartRepairerNode.name);
+    Game['profiler'].registerObject(SpawnWallRepairerNode, SpawnWallRepairerNode.name);
   }
 
   tick(tick: b3.Tick): b3.State {
