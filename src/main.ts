@@ -1,5 +1,5 @@
 import * as telemetry from './lib/telemetry';
-import * as behaviors from './creeps/behaviors'
+import * as behaviors from './creeps/creeps'
 import * as spawns from './spawns/spawns';
 import * as towers from './towers/towers';
 import * as b3 from './lib/behavior3';
@@ -30,26 +30,45 @@ export function loop() {
     }
   }
 
-  metrics.globalStart = Game.cpu.getUsed();
+  let creepLoopTimes: number[] = [];
+  let spawnLoopTimes: number[] = [];
+  let towerLoopTimes: number[] = [];
+
+  let loopStart = Game.cpu.getUsed();
   for (let room in Game.rooms) {
     let gameRoom = Game.rooms[room];
+
+    let creepStart = Game.cpu.getUsed();
     let myCreeps = gameRoom.find<Creep>(FIND_MY_CREEPS);
     for (let c of myCreeps) {
       creepBehaviorTree.screepsTick(c);
     }
+    let creepEnd = Game.cpu.getUsed();
+    creepLoopTimes.push(creepEnd - creepStart);
 
+    let spawnStart = Game.cpu.getUsed();
     let spawns = gameRoom.find<Spawn>(FIND_MY_SPAWNS);
     for (let spawn of spawns) {
       spawnBehaviorTree.screepsTick(spawn);
     }
+    let spawnEnd = Game.cpu.getUsed();
+    spawnLoopTimes.push(spawnEnd - spawnStart);
 
+    let towerStart = Game.cpu.getUsed();
     let towers = gameRoom.find<Tower>(FIND_STRUCTURES, { filter: (s: Structure) => s.structureType === STRUCTURE_TOWER });
     for (let tower of towers) {
       towerBehaviorTree.screepsTick(tower);
     }
-
+    let towerEnd = Game.cpu.getUsed();
+    towerLoopTimes.push(towerEnd - towerStart);
   }
-  metrics.globalEnd = Game.cpu.getUsed();
+
+  let loopEnd = Game.cpu.getUsed();
+
+  metrics.mainLoopTime = loopEnd - loopStart;
+  metrics.creepLoopTime = _.sum(creepLoopTimes);
+  metrics.spawnLoopTime = _.sum(spawnLoopTimes);
+  metrics.towerLoopTime = _.sum(towerLoopTimes);
 
   telemetry.logTelemetry(metrics);
 }

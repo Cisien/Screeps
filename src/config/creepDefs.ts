@@ -19,7 +19,7 @@ export let States = {
 
 export let Counts = {
   UPGRADER: 2, // multiply sources
-  HAULER: 2, // additive sources
+  HAULER: 0, // additive sources
   REPAIRER: 1, // direct count
   BUILDER: 1, // direct count
   WALL_REPAIRER: 0, // direct count
@@ -39,6 +39,16 @@ export let WorkerTypes = {
   CLAIMER: 'claimer',
   ATTACKER: 'attacker',
   DISMANTLER: 'dismantler'
+}
+export const NONE_PARTS: PartDefinition = {
+  300: [],
+  550: [],
+  800: [],
+  1050: [],
+  1300: [],
+  1550: [],
+  1800: [],
+  2050: []
 }
 
 export const WORKER_PARTS: PartDefinition = {

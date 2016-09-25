@@ -2,7 +2,9 @@ import ScreepStats from './screepsstats'
 
 export let restarts: number;
 
+declare let RawMemory: any;
 declare var global: any;
+
 export function initialize() {
 
   if (!Memory["stats"]) {
@@ -22,15 +24,13 @@ export function initialize() {
 }
 
 export class Metrics {
-  globalStart: number = 0;
-  globalEnd: number = 0;
-  towerStart: number = 0;
-  towerEnd: number = 0;
-  creepStart: number = 0;
-  creepEnd: number = 0;
-  spawnStart: number = 0;
-  spawnEnd: number = 0;
+  mainLoopTime: number = 0;
+  creepLoopTime: number = 0;
+  spawnLoopTime: number = 0;
+  towerLoopTime: number = 0;
 }
+
+
 
 export function logTelemetry(metrics: Metrics) {
   var rooms = Game.rooms
@@ -72,22 +72,15 @@ export function logTelemetry(metrics: Metrics) {
     Memory["stats"]['spawn.' + spawn.name + '.defenderIndex'] = spawn.memory['defenderIndex'];
   }
 
-  //Memory["stats"]['memory.used'] = RawMemory.get().length;
+  Memory["stats"]['memory.used'] = RawMemory.get().length;
   Memory["stats"]['memory.max'] = 2048 * 1024
-  Memory["stats"]['cpu.CreepManagers'] = 0
-  Memory["stats"]['cpu.Towers'] = 0
-  Memory["stats"]['cpu.Links'] = 0
-  Memory["stats"]['cpu.SetupRoles'] = 0
-  Memory["stats"]['cpu.Creeps'] = 0
-  Memory["stats"]['cpu.SumProfiling'] = 0
-  Memory["stats"]['cpu.Start'] = 0
   Memory["stats"]['cpu.bucket'] = Game.cpu.bucket
   Memory["stats"]['cpu.limit'] = Game.cpu.limit
   Memory["stats"]['cpu.stats'] = Game.cpu.getUsed() - Game.time
-  Memory["stats"]['cpu.mainLoopTime'] = metrics.globalEnd - metrics.globalEnd;
-  Memory["stats"]['cpu.creepTime'] = metrics.creepEnd - metrics.creepStart;
-  Memory["stats"]['cpu.spawnTime'] = metrics.spawnEnd - metrics.spawnStart;
-  Memory["stats"]['cpu.towerTime'] = metrics.towerEnd - metrics.towerStart;
+  Memory["stats"]['cpu.mainLoopTime'] = metrics.mainLoopTime;
+  Memory["stats"]['cpu.creepTime'] = metrics.creepLoopTime;
+  Memory["stats"]['cpu.spawnTime'] = metrics.spawnLoopTime;
+  Memory["stats"]['cpu.towerTime'] = metrics.towerLoopTime;
   Memory["stats"]['cpu.getUsed'] = Game.cpu.getUsed()
   Memory["stats"]['game.time'] = Game.time;
   Memory["stats"]['game.restarts'] = restarts;

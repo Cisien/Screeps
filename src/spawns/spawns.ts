@@ -43,7 +43,7 @@ class SelectPartsForTierNode extends b3.BaseNode implements b3.BaseNode {
   tick(tick: b3.Tick): b3.State {
     let spawn: Spawn = tick.target;
 
-    let creeps = spawn.room.find(FIND_MY_CREEPS);
+    let creeps = spawn.room.find<Creep>(FIND_MY_CREEPS);
     // spawn at 300 to recover from full loss
     if (creeps.length === 0) {
       spawn.memory.forceSpawnType = defs.WorkerTypes.MINER;
@@ -51,18 +51,22 @@ class SelectPartsForTierNode extends b3.BaseNode implements b3.BaseNode {
       return b3.State.SUCCESS;
     }
 
-    let haulers = _.filter(creeps, (c: Creep) => c.memory.role === defs.WorkerTypes.HAULER);
+    let haulers = _.filter<Creep>(creeps, (c: Creep) => c.memory.role === defs.WorkerTypes.HAULER);
     if (haulers.length === 0 && spawn.room.energyAvailable <= 300) {
       // no haulers, force spawn at 300 tier;
       spawn.memory.forceSpawnType = defs.WorkerTypes.HAULER;
       spawn.memory.tier = 300;
-      b3.State.SUCCESS;
+      return b3.State.SUCCESS;
+    }
+
+    if (spawn.memory.forceSpawnType) {
+      delete spawn.memory.forceSpawnType
     }
 
     let cap = spawn.room.energyCapacityAvailable;
 
     let lastCap = 0;
-    for (let parts in defs.PartDefinition) {
+    for (let parts in defs.NONE_PARTS) {
       let key = parseInt(parts);
       if (key <= cap && key > lastCap) {
         lastCap = key;
@@ -110,11 +114,44 @@ class SpawnMinerNode extends SpawnNodeBase implements SpawnNodeBase {
 
     if (spawn.memory.forceSpawnType === type) {
       return this._doSpawn(parts, type, spawn);
+    } else if(spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
     }
 
     let miners = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
 
-    if (miners.length <= spawn.memory.sourceCount) {
+    if (miners.length < spawn.memory.sourceCount) {
+      return this._doSpawn(parts, type, spawn);
+    }
+
+    return b3.State.SUCCESS
+  }
+}
+
+class SpawnHaulerNode extends SpawnNodeBase implements SpawnNodeBase {
+  constructor() {
+    super();
+    this.id = SpawnHaulerNode.name
+  }
+
+  tick(tick: b3.Tick): b3.State {
+    let spawn: Spawn = tick.target;
+
+    let type = defs.WorkerTypes.HAULER;
+    let parts = defs.HAULER_PARTS[spawn.memory.tier];
+    if (parts.length === 0) {
+      return b3.State.FAILURE;
+    }
+
+    if (spawn.memory.forceSpawnType === type) {
+      return this._doSpawn(parts, type, spawn);
+    } else if (spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
+    }
+
+    let haulers = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
+
+    if (haulers.length < spawn.memory.sourceCount + defs.Counts.HAULER) {
       return this._doSpawn(parts, type, spawn);
     }
 
@@ -140,40 +177,13 @@ class SpawnUpgraderNode extends SpawnNodeBase implements SpawnNodeBase {
 
     if (spawn.memory.forceSpawnType === type) {
       return this._doSpawn(parts, type, spawn);
+    } else if (spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
     }
 
     let upgraders = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
 
-    if (upgraders.length <= spawn.memory.sourceCount * defs.Counts.UPGRADER) {
-      return this._doSpawn(parts, type, spawn);
-    }
-
-    return b3.State.SUCCESS
-  }
-}
-
-class SpawnHaulerNode extends SpawnNodeBase implements SpawnNodeBase {
-  constructor() {
-    super();
-    this.id = SpawnHaulerNode.name
-  }
-
-  tick(tick: b3.Tick): b3.State {
-    let spawn: Spawn = tick.target;
-
-    let type = defs.WorkerTypes.HAULER;
-    let parts = defs.HAULER_PARTS[spawn.memory.tier];
-    if (parts.length === 0) {
-      return b3.State.FAILURE;
-    }
-
-    if (spawn.memory.forceSpawnType === type) {
-      return this._doSpawn(parts, type, spawn);
-    }
-
-    let haulers = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
-
-    if (haulers.length <= spawn.memory.sourceCount + defs.Counts.HAULER) {
+    if (upgraders.length < spawn.memory.sourceCount * defs.Counts.UPGRADER) {
       return this._doSpawn(parts, type, spawn);
     }
 
@@ -198,12 +208,14 @@ class SpawnBuilderNode extends SpawnNodeBase implements SpawnNodeBase {
 
     if (spawn.memory.forceSpawnType === type) {
       return this._doSpawn(parts, type, spawn);
+    } else if (spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
     }
 
     let builders = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
     let constructionSites = spawn.room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES);
 
-    if (builders.length <= defs.Counts.BUILDER && constructionSites.length > 0) {
+    if (builders.length < defs.Counts.BUILDER && constructionSites.length > 0) {
       return this._doSpawn(parts, type, spawn);
     }
 
@@ -228,11 +240,13 @@ class SpawnRepairerNode extends SpawnNodeBase implements SpawnNodeBase {
 
     if (spawn.memory.forceSpawnType === type) {
       return this._doSpawn(parts, type, spawn);
+    } else if (spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
     }
 
     let repairers = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
 
-    if (repairers.length <= defs.Counts.REPAIRER) {
+    if (repairers.length < defs.Counts.REPAIRER) {
       return this._doSpawn(parts, type, spawn);
     }
 
@@ -257,11 +271,13 @@ class SpawnRampartRepairerNode extends SpawnNodeBase implements SpawnNodeBase {
 
     if (spawn.memory.forceSpawnType === type) {
       return this._doSpawn(parts, type, spawn);
+    } else if (spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
     }
 
     let repairers = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
     let ramparts = spawn.room.find<Rampart>(FIND_STRUCTURES, { filter: (s: Structure) => s.structureType === STRUCTURE_RAMPART });
-    if (repairers.length <= defs.Counts.RAMPART_REPAIRER && ramparts.length > 0) {
+    if (repairers.length < defs.Counts.RAMPART_REPAIRER && ramparts.length > 0) {
       return this._doSpawn(parts, type, spawn);
     }
 
@@ -286,11 +302,13 @@ class SpawnWallRepairerNode extends SpawnNodeBase implements SpawnNodeBase {
 
     if (spawn.memory.forceSpawnType === type) {
       return this._doSpawn(parts, type, spawn);
+    } else if (spawn.memory.forceSpawnType !== undefined) {
+      return b3.State.SUCCESS
     }
 
     let repairers = spawn.room.find<Creep>(FIND_MY_CREEPS, { filter: (c: Creep) => c.memory.role === type });
     let ramparts = spawn.room.find<StructureWall>(FIND_STRUCTURES, { filter: (s: Structure) => s.structureType === STRUCTURE_WALL });
-    if (repairers.length <= defs.Counts.WALL_REPAIRER && ramparts.length > 0) {
+    if (repairers.length < defs.Counts.WALL_REPAIRER && ramparts.length > 0) {
       return this._doSpawn(parts, type, spawn);
     }
 
