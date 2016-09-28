@@ -18,7 +18,7 @@ export let States = {
 };
 
 export let Counts = {
-  UPGRADER: 2, // multiply sources
+  UPGRADER: 0.5, // multiply sources
   HAULER: 0, // additive sources
   REPAIRER: 1, // direct count
   BUILDER: 1, // direct count
@@ -62,6 +62,18 @@ export const WORKER_PARTS: PartDefinition = {
   2050: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK]
 };
 
+export const UPGRADER_PARTS: PartDefinition = {
+  300: [MOVE, MOVE, CARRY, CARRY, WORK],
+  550: [MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK],
+  800: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK],
+  1050: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK],
+  1300: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK],
+  1550: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK],
+  1800: [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY],
+  2050: [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY]
+};
+
+
 export const HAULER_PARTS: PartDefinition = {
   300: [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY],
   550: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY],
@@ -80,7 +92,7 @@ export const MINER_PARTS: PartDefinition = {
   1050: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK],
   1300: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK],
   1550: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK],
-  1800: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK],
+  1800: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY],
   2050: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK]
 }
 
@@ -118,3 +130,38 @@ export const CLAIMER_PARTS: PartDefinition = {
   1800: [MOVE, MOVE, MOVE, MOVE, CLAIM, CLAIM],
   2050: [MOVE, MOVE, MOVE, MOVE, CLAIM, CLAIM]
 }
+
+/*
+  // absolute world coordinates, with 0,0 indicating the top left corner of E0S0
+  Object.defineProperty(RoomPosition.prototype, 'worldPosition', {
+    get: function() {
+      let worldpos = [0,0];
+      let nameparts = this.roomName.split(/([NESW])/);
+      if(nameparts[1]=='E') {
+        worldpos[0] = (nameparts[2]*50) + this.x;
+      }
+      else {
+        worldpos[0] = (nameparts[2]*-50) - (50-this.x);
+      }
+      if(nameparts[3]=='S') {
+        worldpos[1] = (nameparts[4]*50) + this.y;
+      }
+      else {
+        worldpos[1] = (nameparts[4]*-50) - (50-this.y);
+      }
+      return worldpos;
+    },
+    set: function(x, y) {
+      let worldx=Math.floor(x/50),
+          worldy=Math.floor(y/50);
+      let NS="S", EW="E";
+      if(worldx<0) {worldx=-worldx-1; EW="W";}
+      if(worldy<0) {worldy=-worldy-1; NS="N";}
+      this.x=((x%50)+50)%50;
+      this.y=((x%50)+50)%50;
+      this.roomName=EW+worldx+NS+worldy;
+      return this;
+    },
+    configurable: true
+  });
+ */

@@ -28,6 +28,7 @@ export class Metrics {
   creepLoopTime: number = 0;
   spawnLoopTime: number = 0;
   towerLoopTime: number = 0;
+  linkLoopTime: number = 0;
 }
 
 
@@ -81,6 +82,7 @@ export function logTelemetry(metrics: Metrics) {
   Memory["stats"]['cpu.creepTime'] = metrics.creepLoopTime;
   Memory["stats"]['cpu.spawnTime'] = metrics.spawnLoopTime;
   Memory["stats"]['cpu.towerTime'] = metrics.towerLoopTime;
+  Memory["stats"]['cpu.linkTime'] = metrics.linkLoopTime;
   Memory["stats"]['cpu.getUsed'] = Game.cpu.getUsed()
   Memory["stats"]['game.time'] = Game.time;
   Memory["stats"]['game.restarts'] = restarts;

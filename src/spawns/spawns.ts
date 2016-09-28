@@ -60,7 +60,7 @@ class SelectPartsForTierNode extends b3.BaseNode implements b3.BaseNode {
     }
 
     let haulers = _.filter<Creep>(creeps, (c: Creep) => c.memory.role === defs.WorkerTypes.HAULER);
-    if (haulers.length === 0 && spawn.room.energyAvailable <= 300) {
+    if (haulers.length === 0 && spawn.room.energyAvailable >= 300) {
       // no haulers, force spawn at 300 tier;
       spawn.memory.forceSpawnType = defs.WorkerTypes.HAULER;
       spawn.memory.tier = 300;
@@ -177,7 +177,7 @@ class SpawnUpgraderNode extends SpawnNodeBase implements SpawnNodeBase {
     let spawn: Spawn = tick.target;
 
     let type = defs.WorkerTypes.UPGRADER;
-    let parts = defs.WORKER_PARTS[spawn.memory.tier];
+    let parts = defs.UPGRADER_PARTS[spawn.memory.tier];
 
     if (parts.length === 0) {
       return b3.State.FAILURE;

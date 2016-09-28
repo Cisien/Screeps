@@ -24,13 +24,13 @@ export class PathToEnergyNode extends b3.BaseNode implements b3.BaseNode {
 
     let storage = creep.room.find<Structure>(FIND_STRUCTURES)
 
-    storage = _.filter<Structure>(storage, (s) => (s instanceof StructureContainer && s.store.energy >= creep.carryCapacity));
+    storage = _.filter<Structure>(storage, (s) => (s instanceof StructureStorage && s.store.energy >= creep.carryCapacity));
 
-    if (!storage || storage.length === 0) {
-      storage = _.filter<Structure>(storage, (s) => (s instanceof StructureStorage && s.store.energy >= creep.carryCapacity));
+    if (storage == undefined || storage.length === 0) {
+      storage = _.filter<Structure>(storage, (s) => (s instanceof StructureContainer && s.store.energy >= creep.carryCapacity));
     }
 
-    if (!storage || storage.length === 0) {
+    if (storage == undefined || storage.length === 0) {
       return b3.State.FAILURE;
     }
 
@@ -91,8 +91,9 @@ export class MoveToEnergyNode extends b3.BaseNode implements b3.BaseNode {
 
 
     if (creep.pos.x === creep.memory.lastPos.x && creep.pos.y === creep.memory.lastPos.y) {
-      if (creep.memory.lastPos.ticks >= 5) {
+      if (creep.memory.lastPos.ticks === 5) {
         delete creep.memory.path;
+        delete creep.memory.lastPos.ticks
         return b3.State.FAILURE;
       } else {
         creep.memory.lastPos.ticks++;

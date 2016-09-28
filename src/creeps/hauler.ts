@@ -5,7 +5,7 @@ import * as common from './common'
 
 export default class HaulerNode extends b3.MemSequence implements b3.MemSequence {
   constructor() {
-    super([new common.PathToEnergyNode(), new common.MoveToEnergyNode(), new common.PickupEnergyNode(),
+    super([new PathToEnergyNode(), new common.MoveToEnergyNode(), new common.PickupEnergyNode(),
     new PathToStorageNode(), new MoveToStorageNode(), new TransferToStorageNode()]);
     this.id = HaulerNode.name;
 
@@ -29,6 +29,60 @@ export default class HaulerNode extends b3.MemSequence implements b3.MemSequence
   }
 }
 
+export class PathToEnergyNode extends b3.BaseNode implements b3.BaseNode {
+  constructor() {
+    super();
+    this.id = PathToEnergyNode.name
+  }
+  tick(tick: b3.Tick): b3.State {
+    let creep: Creep = tick.target as Creep;
+
+    if (creep.carry.energy > 0) {
+      return b3.State.SUCCESS
+    }
+
+    let energyStuff: (Resource | Structure)[] = [];
+
+    let resources = creep.room.find<Resource>(FIND_DROPPED_ENERGY, {
+      filter: (r: Resource) => r.amount >= creep.carryCapacity * .5
+    });
+
+    for (let obj of resources) {
+      energyStuff.push(obj);
+    }
+
+    let storage = creep.room.find<Structure>(FIND_STRUCTURES)
+
+    let selectedStorage = _.filter<Structure>(storage, (s:Structure) => s instanceof StructureLink && s.energy > 0);
+
+    if (selectedStorage == undefined || selectedStorage.length === 0) {
+      selectedStorage = _.filter<Structure>(storage, (s:Structure) => (s instanceof StructureContainer && s.store.energy >= creep.carryCapacity));
+    }
+
+    if (selectedStorage == undefined || selectedStorage.length === 0) {
+      selectedStorage = _.filter<Structure>(storage, (s:Structure) => (s instanceof StructureStorage && s.store.energy >= creep.carryCapacity));
+    }
+
+    if (selectedStorage == undefined || selectedStorage.length === 0) {
+      return b3.State.FAILURE;
+    }
+
+    for (let obj of selectedStorage) {
+      energyStuff.push(obj);
+    }
+
+    let resource = creep.pos.findClosestByRange<Resource | Structure>(energyStuff);
+    if (!resource) {
+      return b3.State.FAILURE;
+    }
+
+    creep.memory.resource = resource.id;
+    creep.memory.path = Room.serializePath(creep.room.findPath(creep.pos, resource.pos))
+
+    return b3.State.SUCCESS;
+  }
+}
+
 class PathToStorageNode extends b3.BaseNode implements b3.BaseNode {
   constructor() {
     super();
@@ -41,10 +95,10 @@ class PathToStorageNode extends b3.BaseNode implements b3.BaseNode {
     let storage = creep.room.find<Structure>(FIND_STRUCTURES);
 
     let allStorage = _.filter<Structure>(storage, (s) =>
-        (s instanceof StructureSpawn
-          || s instanceof StructureExtension
-          || s instanceof StructureTower)
-        && s.energy < s.energyCapacity
+      (s instanceof StructureSpawn
+        || s instanceof StructureExtension
+        || s instanceof StructureTower)
+      && s.energy < s.energyCapacity
     )
 
     if (!allStorage || allStorage.length === 0) {
@@ -88,6 +142,7 @@ class MoveToStorageNode extends b3.BaseNode implements b3.BaseNode {
     if (!creep.memory.lastPos) {
       creep.memory.lastPos = { x: creep.pos.x, y: creep.pos.y, ticks: 0 };
     }
+
     let moveStatus = creep.moveByPath(creep.memory.path);
 
     if (moveStatus == ERR_NOT_FOUND) {
@@ -97,11 +152,11 @@ class MoveToStorageNode extends b3.BaseNode implements b3.BaseNode {
       return b3.State.RUNNING;
     }
 
-
     if (creep.pos.x === creep.memory.lastPos.x && creep.pos.y === creep.memory.lastPos.y) {
-      if(creep.memory.lastPos.ticks >= 5) {
-      delete creep.memory.path;
-      return b3.State.FAILURE;
+      if (creep.memory.lastPos.ticks === 5) {
+        delete creep.memory.path;
+        delete creep.memory.lastPos.ticks
+        return b3.State.FAILURE;
       } else {
         creep.memory.lastPos.ticks++;
         return b3.State.RUNNING;
