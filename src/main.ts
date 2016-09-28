@@ -86,28 +86,7 @@ function mainloop() {
     towerLoopTimes.push(towerEnd - towerStart);
 
     let linkStart = Game.cpu.getUsed();
-    let linkIds = Memory.rooms[room].sourceLinkIds;
-    let storageLinkId = Memory.rooms[room].storageLinkId;
-
-    if (linkIds && linkIds.length > 0 && storageLinkId) {
-      let storageLink = Game.getObjectById<StructureLink>(storageLinkId);
-      if (storageLink != null) {
-        for (let l of linkIds) {
-
-          let link = Game.getObjectById<StructureLink>(l);
-
-          if (link == null || link.cooldown > 0 || link.energy < link.energyCapacity) {
-            return true; //continue;
-          }
-
-          if (storageLink.energy > 0) {
-            return true; //continue;
-          }
-
-          link.transferEnergy(storageLink);
-        }
-      }
-    }
+    runLinks(room);
     let linkEnd = Game.cpu.getUsed();
     linkLoopTimes.push(linkEnd - linkStart);
   }
@@ -220,4 +199,36 @@ function learnSourceLinks(room: Room): void {
 
     Memory.rooms[room.name].sourceLinkIds.push(links[0].id);
   })
+}
+
+function runLinks(room: string) {
+  let storageLinkId = Memory.rooms[room].storageLinkId;
+  let linkIds = Memory.rooms[room].sourceLinkIds;
+
+  if (linkIds && linkIds.length > 0 && storageLinkId) {
+    let storageLink = Game.getObjectById<StructureLink>(storageLinkId);
+    if (storageLink != null) {
+      for (let l of linkIds) {
+        let link = Game.getObjectById<StructureLink>(l);
+        if (link == null) {
+          delete Memory.rooms[room].sourceLinkIds
+          break;
+        }
+
+        if (link.cooldown > 0 || link.energy < link.energyCapacity) {
+          continue;
+        }
+
+        if (storageLink.energy > 0) {
+          continue;
+        }
+
+        console.log(`link ${link.id} is transfering to link ${storageLink.id}`)
+        link.transferEnergy(storageLink);
+      }
+    }
+    else {
+      delete Memory.rooms[room].storageLinkId;
+    }
+  }
 }

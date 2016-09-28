@@ -124,10 +124,23 @@ class HarvestSourceNode extends b3.BaseNode implements b3.BaseNode {
   tick(tick: b3.Tick): b3.State {
     let creep: Creep = tick.target as Creep;
 
-    if(creep.carry.energy === creep.carryCapacity) {
-      let link = creep.pos.findInRange<Structure>(FIND_STRUCTURES, 1, (s: Structure) => s instanceof StructureLink);
-      if(link != null && link.length > 0) {
-        creep.transfer(link[0], RESOURCE_ENERGY);
+    if (!creep.memory.nearbyLinkId) {
+      let link = creep.pos.findInRange<Structure>(FIND_STRUCTURES, 1, {
+        filter: (s: Structure) => s.structureType === STRUCTURE_LINK
+      });
+
+      if (link != null && link.length > 0) {
+        creep.memory.nearbyLinkId = link[0].id;
+      }
+    }
+
+    if (creep.memory.nearbyLinkId && creep.carry.energy === creep.carryCapacity) {
+      let link = Game.getObjectById<StructureLink>(creep.memory.nearbyLinkId);
+
+      if(link == null) {
+        delete creep.memory.nearbyLinkId;
+      } else {
+        creep.transfer(link, RESOURCE_ENERGY);
       }
     }
 
@@ -140,7 +153,7 @@ class HarvestSourceNode extends b3.BaseNode implements b3.BaseNode {
         return b3.State.RUNNING;
       }
 
-      if(creep.carry.energy !== creep.carryCapacity) {
+      if (creep.carry.energy !== creep.carryCapacity) {
         creep.withdraw(tank, RESOURCE_ENERGY)
       }
     }

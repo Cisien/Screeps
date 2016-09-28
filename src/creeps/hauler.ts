@@ -52,15 +52,21 @@ export class PathToEnergyNode extends b3.BaseNode implements b3.BaseNode {
     }
 
     let storage = creep.room.find<Structure>(FIND_STRUCTURES)
+    let selectedStorage: Structure[] = [];
 
-    let selectedStorage = _.filter<Structure>(storage, (s:Structure) => s instanceof StructureLink && s.energy > 0);
+    if (Memory.rooms[creep.room.name].storageLinkId != undefined) {
+      let storageLink = Game.getObjectById<StructureLink>(Memory.rooms[creep.room.name].storageLinkId)
+      if (storageLink != null && storageLink.energy > 0) {
+        selectedStorage.push(storageLink);
+      }
+    }
 
-    if (selectedStorage == undefined || selectedStorage.length === 0) {
-      selectedStorage = _.filter<Structure>(storage, (s:Structure) => (s instanceof StructureContainer && s.store.energy >= creep.carryCapacity));
+    if (selectedStorage.length === 0) {
+      selectedStorage = _.filter<Structure>(storage, (s: Structure) => (s instanceof StructureContainer && s.store.energy >= creep.carryCapacity));
     }
 
     if (selectedStorage == undefined || selectedStorage.length === 0) {
-      selectedStorage = _.filter<Structure>(storage, (s:Structure) => (s instanceof StructureStorage && s.store.energy >= creep.carryCapacity));
+      selectedStorage = _.filter<Structure>(storage, (s: Structure) => (s instanceof StructureStorage && s.store.energy >= creep.carryCapacity));
     }
 
     if (selectedStorage == undefined || selectedStorage.length === 0) {
